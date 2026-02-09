@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import Insights from "./pages/Insights";
 import Simulator from "./pages/Simulator";
 import Mission from "./pages/Mission";
+import MissionTracker from "./pages/MissionTracker";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/insights" element={<Insights />} />
             <Route path="/simulator" element={<Simulator />} />
             <Route path="/mission" element={<Mission />} />
+            <Route path="/mission/tracker" element={<MissionTracker />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AnimatePresence>
