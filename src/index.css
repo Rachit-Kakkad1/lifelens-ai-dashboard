@@ -78,8 +78,16 @@
     box-shadow: 0 0 20px hsl(174 100% 45% / 0.3);
   }
 
+  .glow-cyan-strong {
+    box-shadow: 0 0 40px hsl(174 100% 45% / 0.5), 0 0 80px hsl(174 100% 45% / 0.25), inset 0 0 20px hsl(174 100% 45% / 0.1);
+  }
+
   .glow-green {
     box-shadow: 0 0 20px hsl(137 55% 60% / 0.3);
+  }
+
+  .glow-green-strong {
+    box-shadow: 0 0 40px hsl(137 55% 60% / 0.5), 0 0 80px hsl(137 55% 60% / 0.25), inset 0 0 20px hsl(137 55% 60% / 0.1);
   }
 
   .gradient-bg {
