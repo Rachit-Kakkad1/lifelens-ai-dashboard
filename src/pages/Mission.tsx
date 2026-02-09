@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import {
   LineChart, Line, XAxis, YAxis, ResponsiveContainer,
   CartesianGrid,
@@ -8,7 +9,10 @@ import Navbar from "@/components/Navbar";
 import PageTransition from "@/components/PageTransition";
 import { weeklyMission } from "@/data/mockData";
 
-const Mission = () => (
+const Mission = () => {
+  const navigate = useNavigate();
+  
+  return (
   <div className="min-h-screen gradient-bg">
     <Navbar />
     <PageTransition>
@@ -92,23 +96,25 @@ const Mission = () => (
         </motion.div>
 
         {/* CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="text-center"
-        >
-          <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            className="btn-glow px-10 py-4 rounded-xl text-primary-foreground font-semibold text-base focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background"
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="text-center"
           >
-            Start Weekly Mission →
-          </motion.button>
-        </motion.div>
-      </main>
-    </PageTransition>
-  </div>
-);
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => navigate("/mission/tracker")}
+              className="btn-glow px-10 py-4 rounded-xl text-primary-foreground font-semibold text-base focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background"
+            >
+              Start Weekly Mission →
+            </motion.button>
+          </motion.div>
+        </main>
+      </PageTransition>
+    </div>
+  );
+};
 
 export default Mission;
