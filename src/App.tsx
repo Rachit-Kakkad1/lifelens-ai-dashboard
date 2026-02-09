@@ -11,6 +11,7 @@ import Simulator from "./pages/Simulator";
 import Mission from "./pages/Mission";
 import MissionTracker from "./pages/MissionTracker";
 import CheckIn from "./pages/CheckIn";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/simulator" element={<Simulator />} />
             <Route path="/mission" element={<Mission />} />
             <Route path="/mission/tracker" element={<MissionTracker />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AnimatePresence>

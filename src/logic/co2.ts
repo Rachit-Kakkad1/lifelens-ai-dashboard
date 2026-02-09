@@ -1,6 +1,8 @@
 import { TransportMode } from "../types";
 
-// Emission factors in kg CO2 per daily commute (assuming avg 5km)
+/**
+ * Emission factors in kg CO2 per daily commute
+ */
 const CO2_FACTORS: Record<TransportMode, number> = {
     walk: 0,
     cycle: 0,
@@ -8,23 +10,23 @@ const CO2_FACTORS: Record<TransportMode, number> = {
     car: 2.5
 };
 
-/**
- * Calculates daily CO2 emissions based on transport mode.
- * 
- * @param transport - Mode of transport
- * @returns CO2 emissions in kg
- */
 export const calculateDailyCO2 = (transport: TransportMode): number => {
     return CO2_FACTORS[transport];
 };
 
-/**
- * Returns the potential CO2 savings if switching from car to this mode.
- * @param transport - Mode of transport
- * @returns CO2 savings in kg
- */
 export const calculateCO2Savings = (transport: TransportMode): number => {
     const baseline = CO2_FACTORS.car;
     const actual = CO2_FACTORS[transport];
     return Math.max(0, baseline - actual);
+};
+
+/**
+ * Sustainability Score Logic
+ * Balanced against Wellness (0-100 scale)
+ * 20kg/week is the "Low sustainability" threshold for this personal metric.
+ */
+export const calculateSustainabilityScore = (weeklyCo2Sum: number): number => {
+    const threshold = 20;
+    const score = 100 - (weeklyCo2Sum / threshold * 100);
+    return Math.max(0, Math.min(100, Math.round(score)));
 };

@@ -172,39 +172,44 @@ const Simulator = () => {
             {/* Results */}
             <div className="space-y-6">
               {/* Wellness Card */}
-              <motion.div layout className="glass-card p-6 relative overflow-hidden">
+              <motion.div layout className="glass-card p-8 relative overflow-hidden glow-cyan border-l-4 border-accent">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h3 className="font-semibold text-foreground">Projected Wellness</h3>
-                    <p className="text-xs text-muted-foreground">vs. your 7-day average ({baseline.wellness})</p>
+                    <span className="text-xs font-bold text-accent uppercase tracking-widest mb-1 block">Internal Wellness</span>
+                    <h3 className="font-bold text-foreground">Projected Health</h3>
+                    <p className="text-[10px] text-muted-foreground mt-1">vs. your 7-day average ({baseline.wellness})</p>
                   </div>
                   <Zap className={`w-5 h-5 ${wellnessDelta >= 0 ? "text-accent" : "text-muted-foreground"}`} />
                 </div>
 
                 <div className="flex items-end gap-3">
-                  <span className="text-5xl font-bold">{simulatedWellness}</span>
-                  <span className={`text-sm mb-2 font-medium ${wellnessDelta >= 0 ? "text-green-400" : "text-red-400"}`}>
+                  <span className="text-6xl font-black text-foreground">{simulatedWellness}</span>
+                  <span className={`text-sm mb-2 font-bold ${wellnessDelta >= 0 ? "text-accent" : "text-red-400"}`}>
                     {wellnessDelta > 0 ? "+" : ""}{wellnessDelta} pts
                   </span>
                 </div>
               </motion.div>
 
               {/* CO2 Card */}
-              <motion.div layout className="glass-card p-6 relative overflow-hidden">
+              <motion.div layout className="glass-card p-8 relative overflow-hidden glow-green border-l-4 border-eco">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h3 className="font-semibold text-foreground">Daily CO₂ Impact</h3>
-                    <p className="text-xs text-muted-foreground">vs. your avg daily ({baselineDailyCo2.toFixed(1)} kg)</p>
+                    <span className="text-xs font-bold text-eco uppercase tracking-widest mb-1 block">External Impact</span>
+                    <h3 className="font-bold text-foreground">Daily CO₂ Impact</h3>
+                    <p className="text-[10px] text-muted-foreground mt-1">vs. your avg daily ({baselineDailyCo2.toFixed(1)} kg)</p>
                   </div>
                   <Leaf className={`w-5 h-5 ${co2Delta <= 0 ? "text-eco" : "text-orange-400"}`} />
                 </div>
 
                 <div className="flex items-end gap-3">
-                  <span className="text-5xl font-bold">{simulatedCo2}</span>
+                  <span className="text-6xl font-black text-foreground">{simulatedCo2}</span>
                   <span className="text-xl font-medium text-muted-foreground mb-1">kg</span>
-                  <span className={`text-sm mb-2 font-medium ${co2Delta <= 0 ? "text-green-400" : "text-red-400"}`}>
-                    {co2Delta > 0 ? "+" : ""}{co2Delta.toFixed(1)} relative
-                  </span>
+                  <div className="mb-1">
+                    <p className={`text-sm font-bold ${co2Delta <= 0 ? "text-eco" : "text-red-400"}`}>
+                      {co2Delta > 0 ? "+" : ""}{co2Delta.toFixed(1)} relative
+                    </p>
+                    <p className="text-[10px] text-muted-foreground italic">≈ {((2.5 - simulatedCo2) / 1.5).toFixed(1)} trees saved 🌱</p>
+                  </div>
                 </div>
               </motion.div>
 

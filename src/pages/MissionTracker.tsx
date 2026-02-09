@@ -5,7 +5,7 @@ import PageTransition from "@/components/PageTransition";
 import { StorageService } from "@/services/storage";
 import { MissionState } from "@/types";
 import { INITIAL_MISSION } from "@/logic/mission";
-import { Target, Trophy, Bike, CheckCircle2, ArrowUpRight, Leaf } from "lucide-react";
+import { Target, Trophy, Bike, CheckCircle2, ArrowUpRight, Leaf, Zap } from "lucide-react";
 
 const MissionTracker = () => {
   const [mission, setMission] = useState<MissionState>(INITIAL_MISSION);
@@ -45,51 +45,71 @@ const MissionTracker = () => {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className={`glass-card p-8 border-l-4 ${mission.completed ? "border-l-accent" : "border-l-primary"} relative overflow-hidden`}
+            className={`glass-card p-10 border-l-8 ${mission.completed ? "border-accent glow-cyan-strong" : "border-primary glow-primary"} relative overflow-hidden`}
           >
             {mission.completed && (
-              <div className="absolute top-0 right-0 p-4">
-                <Trophy className="w-16 h-16 text-accent/20" />
+              <div className="absolute top-0 right-0 p-6">
+                <Trophy className="w-24 h-24 text-accent/10" />
               </div>
             )}
 
-            <div className="flex items-start gap-4 mb-6">
-              <div className={`p-3 rounded-xl ${mission.completed ? "bg-accent/20 text-accent" : "bg-primary/20 text-primary"}`}>
-                <Bike className="w-8 h-8" />
+            <div className="flex flex-col md:flex-row items-center md:items-start gap-8 mb-10">
+              <div className={`p-5 rounded-2xl ${mission.completed ? "bg-accent/20 text-accent" : "bg-primary/20 text-primary"}`}>
+                <Bike className="w-12 h-12" />
               </div>
-              <div>
-                <h2 className="text-xl font-bold text-foreground">{mission.title}</h2>
-                <p className="text-muted-foreground">Replace your car commute with cycling.</p>
+              <div className="text-center md:text-left flex-1">
+                <span className={`text-xs font-bold uppercase tracking-[0.2em] mb-2 block ${mission.completed ? "text-accent" : "text-primary"}`}>Active Behavioral Loop</span>
+                <h2 className="text-4xl font-black text-foreground mb-4">{mission.title}</h2>
+                <div className="flex flex-wrap justify-center md:justify-start gap-4">
+                  <div className="px-4 py-2 rounded-xl bg-background/50 border border-border flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-accent" />
+                    <span className="text-xs font-bold text-foreground">Human Health +18%</span>
+                  </div>
+                  <div className="px-4 py-2 rounded-xl bg-background/50 border border-border flex items-center gap-2">
+                    <Leaf className="w-4 h-4 text-eco" />
+                    <span className="text-xs font-bold text-foreground">Planet Health -5.2kg</span>
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Progress Bar */}
-            <div className="mb-2 flex justify-between text-sm font-medium">
-              <span>Progress</span>
-              <span>{mission.currentCount} / {mission.targetCount} rides</span>
+            <div className="mb-3 flex justify-between text-sm font-bold uppercase tracking-tighter">
+              <span className="text-muted-foreground">Mission Saturation</span>
+              <span className={mission.completed ? "text-accent" : "text-primary"}>{progress}% COMPLETE</span>
             </div>
-            <div className="h-4 bg-secondary rounded-full overflow-hidden mb-8">
+            <div className="h-6 bg-secondary/50 rounded-2xl overflow-hidden mb-12 border border-border/50 p-1">
               <motion.div
-                className={`h-full ${mission.completed ? "bg-accent" : "bg-primary"}`}
+                className={`h-full rounded-xl ${mission.completed ? "bg-accent glow-cyan" : "bg-primary glow-primary"}`}
                 initial={{ width: 0 }}
                 animate={{ width: `${progress}%` }}
-                transition={{ duration: 1, delay: 0.2 }}
+                transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
               />
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="p-4 bg-background/30 rounded-lg">
-                <p className="text-xs text-muted-foreground mb-1">Energy Gained</p>
-                <p className="text-xl font-bold flex items-center gap-1">
-                  +{mission.totalEnergyGained}% <ArrowUpRight className="w-4 h-4 text-green-400" />
-                </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              <div className="p-6 bg-background/20 rounded-2xl border border-border/50 group hover:border-accent/40 transition-colors">
+                <p className="text-xs font-bold text-muted-foreground uppercase mb-3 tracking-widest">Energy Gained</p>
+                <div className="flex items-end gap-2">
+                  <p className="text-4xl font-black text-foreground">+{mission.totalEnergyGained}%</p>
+                  <ArrowUpRight className="w-6 h-6 text-accent mb-1" />
+                </div>
               </div>
-              <div className="p-4 bg-background/30 rounded-lg">
-                <p className="text-xs text-muted-foreground mb-1">CO₂ Avoided</p>
-                <p className="text-xl font-bold flex items-center gap-1">
-                  {mission.totalCo2Saved.toFixed(1)}kg <Leaf className="w-4 h-4 text-eco" />
-                </p>
+              <div className="p-6 bg-background/20 rounded-2xl border border-border/50 group hover:border-eco/40 transition-colors">
+                <p className="text-xs font-bold text-muted-foreground uppercase mb-3 tracking-widest">CO₂ Avoided</p>
+                <div className="flex items-end gap-2">
+                  <p className="text-4xl font-black text-foreground">{mission.totalCo2Saved.toFixed(1)}kg</p>
+                  <Leaf className="w-6 h-6 text-eco mb-1" />
+                </div>
+              </div>
+              <div className="p-6 bg-background/20 rounded-2xl border border-border/50 group hover:border-primary/40 transition-colors sm:col-span-2 md:col-span-1">
+                <p className="text-xs font-bold text-muted-foreground uppercase mb-3 tracking-widest">Emotional Impact</p>
+                <div className="flex items-end gap-2">
+                  <p className="text-4xl font-black text-foreground">{(mission.totalCo2Saved / 1.5).toFixed(1)}</p>
+                  <span className="text-xl font-bold text-foreground/60 mb-1">Trees saved</span>
+                  <span className="text-2xl mb-1 ml-1">🌱</span>
+                </div>
               </div>
             </div>
           </motion.div>

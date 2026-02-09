@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Activity, BarChart3, Lightbulb, SlidersHorizontal, Target } from "lucide-react";
+import { Activity, BarChart3, Lightbulb, SlidersHorizontal, Target, User } from "lucide-react";
 
 const navItems = [
   { path: "/checkin", label: "Check In", icon: Activity },
@@ -38,8 +38,8 @@ const Navbar = () => {
                 key={item.path}
                 onClick={() => navigate(item.path)}
                 className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isActive
-                    ? "text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
                   }`}
               >
                 {isActive && (
@@ -58,9 +58,15 @@ const Navbar = () => {
           })}
         </div>
 
-        <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center">
-          <span className="text-xs font-medium text-primary">U</span>
-        </div>
+        <button
+          onClick={() => navigate("/profile")}
+          className={`w-10 h-10 rounded-xl border flex items-center justify-center transition-all ${location.pathname === "/profile"
+            ? "bg-primary text-primary-foreground border-primary glow-primary"
+            : "bg-primary/10 border-primary/20 text-primary hover:bg-primary/20"
+            }`}
+        >
+          <User className="w-5 h-5" />
+        </button>
       </div>
     </motion.nav>
   );
