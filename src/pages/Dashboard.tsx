@@ -49,6 +49,9 @@ const Dashboard = () => {
             <h1 className="text-3xl font-bold text-foreground">
               Your Life Impact Today
             </h1>
+            <p className="text-base text-muted-foreground mt-2">
+              One small habit can improve your health and reduce your carbon footprint.
+            </p>
           </motion.div>
 
           {/* Metric Cards */}

@@ -132,31 +132,31 @@ const Simulator = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="grid grid-cols-2 gap-4"
+            className="grid grid-cols-2 gap-6"
           >
-            <div className="glass-card p-6 text-center glow-cyan">
+            <div className="glass-card p-8 text-center glow-cyan-strong">
               <motion.p
                 key={energyDelta}
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.4 }}
-                className="text-3xl font-bold text-accent"
+                transition={{ duration: 0.4, type: "spring", stiffness: 200 }}
+                className="text-5xl md:text-6xl font-extrabold text-accent drop-shadow-[0_0_25px_hsl(174,100%,45%,0.6)]"
               >
                 +{energyDelta}%
               </motion.p>
-              <p className="text-sm text-muted-foreground mt-1">Energy</p>
+              <p className="text-base text-muted-foreground mt-2 font-medium">Energy</p>
             </div>
-            <div className="glass-card p-6 text-center glow-green">
+            <div className="glass-card p-8 text-center glow-green-strong">
               <motion.p
                 key={co2Delta}
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.4 }}
-                className="text-3xl font-bold text-eco"
+                transition={{ duration: 0.4, type: "spring", stiffness: 200 }}
+                className="text-5xl md:text-6xl font-extrabold text-eco drop-shadow-[0_0_25px_hsl(137,55%,60%,0.6)]"
               >
                 {co2Delta} kg
               </motion.p>
-              <p className="text-sm text-muted-foreground mt-1">CO₂</p>
+              <p className="text-base text-muted-foreground mt-2 font-medium">CO₂</p>
             </div>
           </motion.div>
         </main>
