@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LineChart, Line, XAxis, YAxis, Tooltip as RTooltip,
@@ -7,7 +7,7 @@ import {
 import { Zap, Leaf, Brain } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import PageTransition from "@/components/PageTransition";
-import { timelineData } from "@/data/mockData";
+import { StorageService } from "@/services/storage";
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload) return null;
@@ -30,8 +30,68 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 const Dashboard = () => {
-  const wellnessScore = 72;
-  const carbonFootprint = 5.4;
+  const [entries, setEntries] = useState<any[]>([]);
+  const [wellnessScore, setWellnessScore] = useState(0);
+  const [carbonFootprint, setCarbonFootprint] = useState(0);
+  const [insight, setInsight] = useState("Start by checking in to see your impact.");
+  const [mockMode, setMockMode] = useState(false);
+
+  useEffect(() => {
+    const loadData = () => {
+      // Initialize storage/version check
+      StorageService.init();
+
+      const data = StorageService.getEntries();
+
+      if (data.length === 0) {
+        setMockMode(true);
+        // Use mock data for empty state if desired, or just show zeros
+        // For now, let's just leave zeros but show a prompt
+        return;
+      }
+
+      // 1. Weekly CO2 (Sum of last 7 days)
+      const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+      const weeklyEntries = data.filter(e => e.timestamp > oneWeekAgo);
+      const weeklyCo2 = weeklyEntries.reduce((sum, e) => sum + e.co2Emitted, 0);
+      setCarbonFootprint(parseFloat(weeklyCo2.toFixed(1)));
+
+      // 2. Daily Wellness (Latest entry)
+      const latestEntry = data[data.length - 1];
+      if (latestEntry) {
+        setWellnessScore(latestEntry.wellnessScore);
+
+        // Dynamic insight
+        if (latestEntry.wellnessScore > 80) {
+          setInsight("Excellent balance! Your high energy and mood are boosting your wellness.");
+        } else if (latestEntry.sleep < 6) {
+          setInsight("Prioritize sleep tonight to boost your wellness score tomorrow.");
+        } else if (latestEntry.transport === "car") {
+          setInsight("Switching to active transport could lower your CO₂ footprint.");
+        } else {
+          setInsight("Consistent small habits lead to long-term well-being.");
+        }
+      }
+
+      // 3. Timeline Data
+      // Map last 7 entries to chart format
+      // Need to fill in missing days? Or just show what we have. 
+      // Recharts handles gaps if we just map the entries. 
+      // Let's format date to "Mon", "Tue" etc.
+      const chartData = data.slice(-7).map(e => ({
+        day: new Date(e.date).toLocaleDateString("en-US", { weekday: "short" }),
+        // Energy/Mood 0-10. CO2 0-2.5+. 
+        // Let's keep raw values.
+        energy: e.energy,
+        mood: e.mood,
+        co2: e.co2Emitted
+      }));
+
+      setEntries(chartData);
+    };
+
+    loadData();
+  }, []);
 
   return (
     <div className="min-h-screen gradient-bg">
@@ -45,7 +105,9 @@ const Dashboard = () => {
             transition={{ delay: 0.1 }}
             className="mb-8"
           >
-            <p className="text-sm text-muted-foreground mb-1">Sunday, February 9</p>
+            <p className="text-sm text-muted-foreground mb-1">
+              {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+            </p>
             <h1 className="text-3xl font-bold text-foreground">
               Your Life Impact Today
             </h1>
@@ -71,7 +133,7 @@ const Dashboard = () => {
                 <span className="text-5xl font-bold text-foreground">{wellnessScore}</span>
                 <div className="flex items-center gap-1 text-accent text-sm mb-2">
                   <Zap className="w-4 h-4" />
-                  <span>Active</span>
+                  <span>{wellnessScore > 0 ? "Active" : "No Data"}</span>
                 </div>
               </div>
             </motion.div>
@@ -91,7 +153,7 @@ const Dashboard = () => {
                 <span className="text-5xl font-bold text-foreground">{carbonFootprint}</span>
                 <span className="text-sm text-eco mb-2 flex items-center gap-1">
                   <Leaf className="w-4 h-4" />
-                  <span>↓0.8</span>
+                  <span>{carbonFootprint < 5 ? "Low Impact" : "High Impact"}</span>
                 </span>
               </div>
             </motion.div>
@@ -105,9 +167,7 @@ const Dashboard = () => {
             className="flex items-center gap-2 mb-6 text-sm text-muted-foreground"
           >
             <Brain className="w-4 h-4 text-primary" />
-            <span>
-              Well-rested, active days improve mood and reduce emissions.
-            </span>
+            <span>{insight}</span>
           </motion.div>
 
           {/* Timeline Chart */}
@@ -120,42 +180,50 @@ const Dashboard = () => {
             <h2 className="text-lg font-semibold text-foreground mb-4">
               Weekly Impact Timeline
             </h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={timelineData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(260 30% 18%)" />
-                <XAxis
-                  dataKey="day"
-                  stroke="hsl(224 20% 78%)"
-                  fontSize={13}
-                  tickLine={false}
-                />
-                <YAxis stroke="hsl(224 20% 78%)" fontSize={12} tickLine={false} />
-                <RTooltip content={<CustomTooltip />} />
-                <Line
-                  type="monotone"
-                  dataKey="energy"
-                  stroke="hsl(174, 100%, 45%)"
-                  strokeWidth={3}
-                  dot={{ r: 4, fill: "hsl(174, 100%, 45%)", strokeWidth: 0 }}
-                  activeDot={{ r: 6, strokeWidth: 2, stroke: "hsl(174, 100%, 45%)" }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="mood"
-                  stroke="hsl(261, 100%, 65%)"
-                  strokeWidth={2}
-                  dot={{ r: 3, fill: "hsl(261, 100%, 65%)", strokeWidth: 0 }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="co2"
-                  stroke="hsl(137, 55%, 60%)"
-                  strokeWidth={2}
-                  strokeDasharray="6 3"
-                  dot={false}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            <div className="h-[300px] w-full">
+              {entries.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={entries}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(260 30% 18%)" />
+                    <XAxis
+                      dataKey="day"
+                      stroke="hsl(224 20% 78%)"
+                      fontSize={13}
+                      tickLine={false}
+                    />
+                    <YAxis stroke="hsl(224 20% 78%)" fontSize={12} tickLine={false} />
+                    <RTooltip content={<CustomTooltip />} />
+                    <Line
+                      type="monotone"
+                      dataKey="energy"
+                      stroke="hsl(174, 100%, 45%)"
+                      strokeWidth={3}
+                      dot={{ r: 4, fill: "hsl(174, 100%, 45%)", strokeWidth: 0 }}
+                      activeDot={{ r: 6, strokeWidth: 2, stroke: "hsl(174, 100%, 45%)" }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="mood"
+                      stroke="hsl(261, 100%, 65%)"
+                      strokeWidth={2}
+                      dot={{ r: 3, fill: "hsl(261, 100%, 65%)", strokeWidth: 0 }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="co2"
+                      stroke="hsl(137, 55%, 60%)"
+                      strokeWidth={2}
+                      strokeDasharray="6 3"
+                      dot={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-muted-foreground">
+                  No data yet. Complete a check-in to see your timeline.
+                </div>
+              )}
+            </div>
             <div className="flex gap-6 mt-4 text-xs text-muted-foreground">
               <span className="flex items-center gap-1.5">
                 <span className="w-3 h-0.5 bg-accent inline-block rounded" /> Energy
@@ -173,7 +241,7 @@ const Dashboard = () => {
           <div className="grid grid-cols-3 gap-4 mt-6">
             {[
               { label: "Moderate", icon: "🏃", sub: "Activity" },
-              { label: "Needs Impr.", icon: "😴", sub: "Sleep" },
+              { label: "On Track", icon: "😴", sub: "Sleep" },
               { label: "4.2 trees", icon: "🌳", sub: "Offset equiv." },
             ].map((s, i) => (
               <motion.div

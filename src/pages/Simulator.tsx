@@ -1,33 +1,111 @@
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  LineChart, Line, XAxis, YAxis, ResponsiveContainer,
-  CartesianGrid, Tooltip,
-} from "recharts";
-import { SlidersHorizontal } from "lucide-react";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Slider } from "@/components/ui/slider";
+import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
 import PageTransition from "@/components/PageTransition";
-import { simulatorBaseline, simulatorScenario } from "@/data/mockData";
+import { StorageService } from "@/services/storage";
+import { calculateWellnessScore } from "@/logic/wellness"; // Re-use logic
+import { Zap, Leaf, RotateCcw, ArrowRight, Brain } from "lucide-react";
+
+// Types
+type SimulationState = {
+  sleep: number;
+  energy: number;
+  mood: number;
+  transport: "walk" | "cycle" | "public" | "car";
+};
 
 const Simulator = () => {
-  const [trips, setTrips] = useState(3);
-
-  const scenarioData = simulatorBaseline.map((b, i) => {
-    const s = simulatorScenario[i];
-    const factor = trips / 3;
-    return {
-      week: b.week,
-      baselineEnergy: b.energy,
-      baselineCO2: b.co2,
-      scenarioEnergy: Math.round(b.energy + (s.energy - b.energy) * factor),
-      scenarioCO2: +(b.co2 + (s.co2 - b.co2) * factor).toFixed(1),
-    };
+  // Baseline values from real data
+  const [baseline, setBaseline] = useState({
+    wellness: 65, // Default average
+    co2: 12.5     // Default weekly sum
   });
 
-  const lastBase = simulatorBaseline[simulatorBaseline.length - 1];
-  const lastScen = scenarioData[scenarioData.length - 1];
-  const energyDelta = lastScen.scenarioEnergy - lastBase.energy;
-  const co2Delta = (lastScen.scenarioCO2 - lastBase.co2).toFixed(1);
+  // Current stimulation state
+  const [simState, setSimState] = useState<SimulationState>({
+    sleep: 7,
+    energy: 6,
+    mood: 6,
+    transport: "car"
+  });
+
+  const [simulatedWellness, setSimulatedWellness] = useState(0);
+  const [simulatedCo2, setSimulatedCo2] = useState(0);
+
+  // Load baseline on mount
+  useEffect(() => {
+    StorageService.init();
+    const data = StorageService.getEntries();
+
+    if (data.length > 0) {
+      // 1. Calculate Baseline Wellness (Rolling avg of last 7)
+      const last7 = data.slice(-7);
+      const avgWellness = last7.reduce((sum, e) => sum + e.wellnessScore, 0) / last7.length;
+
+      // 2. Calculate Baseline CO2 (Sum of last 7 days)
+      const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+      const weeklyEntries = data.filter(e => e.timestamp > oneWeekAgo);
+      const sumCo2 = weeklyEntries.reduce((sum, e) => sum + e.co2Emitted, 0);
+
+      setBaseline({
+        wellness: Math.round(avgWellness),
+        co2: parseFloat(sumCo2.toFixed(1))
+      });
+
+      // Initialize sim state to averages/modes if possible, or just defaults
+      // Let's keep defaults but maybe update sleep/energy to avg?
+      setSimState(prev => ({
+        ...prev,
+        sleep: Math.round(last7.reduce((s, e) => s + e.sleep, 0) / last7.length) || 7,
+        energy: Math.round(last7.reduce((s, e) => s + e.energy, 0) / last7.length) || 6,
+        mood: Math.round(last7.reduce((s, e) => s + e.mood, 0) / last7.length) || 6,
+        // Keep transport as CAR to show impact of switching?
+        transport: "car"
+      }));
+    }
+  }, []);
+
+  // Recalculate simulation whenever state changes
+  useEffect(() => {
+    // Wellness
+    const newWellness = calculateWellnessScore(simState.sleep, simState.energy, simState.mood);
+    setSimulatedWellness(newWellness);
+
+    // CO2
+    // We want to see the IMPACT on the WEEKLY total if we change ONE day or habitual?
+    // "Simulator" usually implies "If I do this today, what happens?" 
+    // OR "If I do this for a week?"
+    // Let's assume: "Projected Daily Impact" vs "Baseline Avg Daily"?
+    // OR: "If I change my habit to X, my weekly CO2 becomes Y"
+
+    // Let's calculate: 
+    // Baseline CO2 is existing weekly sum.
+    // Projected CO2: (Baseline - AvgDailyCO2) + NewDailyCO2? 
+    // Simpler: Just show the simulated daily values and compare to "Average Daily" baseline.
+
+    // Actually, requirement says: "baseline from stored data", "dynamic deltas".
+    // Let's compare Simulated Daily Wellness vs Baseline Avg Wellness.
+    // Let's compare Simulated Daily CO2 vs Baseline Avg Daily CO2 (derived from weekly).
+
+    // Let's calculate Daily CO2 for sim
+    const factors = { walk: 0, cycle: 0, public: 0.5, car: 2.5 };
+    const newDailyCo2 = factors[simState.transport];
+
+    setSimulatedCo2(newDailyCo2);
+
+  }, [simState]);
+
+  // Derived deltas
+  // Compare Sim Wellness to Baseline Wellness
+  const wellnessDelta = simulatedWellness - baseline.wellness;
+
+  // Compare Sim CO2 to Baseline Avg Daily CO2?
+  // Baseline is Weekly Sum. Avg Daily = Weekly / 7 (or entries count).
+  // Let's assume 7 days for projections.
+  const baselineDailyCo2 = baseline.co2 / 7;
+  const co2Delta = simulatedCo2 - baselineDailyCo2;
 
   return (
     <div className="min-h-screen gradient-bg">
@@ -37,128 +115,113 @@ const Simulator = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
+            className="mb-8"
           >
-            <h1 className="text-3xl font-bold text-foreground mb-2">
-              What-If Impact Simulator
-            </h1>
+            <h1 className="text-3xl font-bold text-foreground">Loop Simulator</h1>
+            <p className="text-muted-foreground mt-2">
+              See how changing your daily habits impacts your future wellness.
+            </p>
           </motion.div>
 
-          {/* Slider Control */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="glass-card p-6 mb-6"
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <SlidersHorizontal className="w-5 h-5 text-primary" />
-              <p className="text-foreground font-medium">
-                Replace <span className="text-accent font-bold">{trips} car trips</span> with walking per week
-              </p>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Controls */}
+            <div className="space-y-6">
+              <div className="glass-card p-6 space-y-6">
+                <div>
+                  <label className="text-sm font-medium mb-4 block">Sleep Duration ({simState.sleep}h)</label>
+                  <Slider
+                    min={0} max={10} step={1}
+                    value={[simState.sleep]}
+                    onValueChange={v => setSimState({ ...simState, sleep: v[0] })}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-4 block">Energy Level ({simState.energy})</label>
+                  <Slider
+                    min={0} max={10} step={1}
+                    value={[simState.energy]}
+                    onValueChange={v => setSimState({ ...simState, energy: v[0] })}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-4 block">Mood ({simState.mood})</label>
+                  <Slider
+                    min={0} max={10} step={1}
+                    value={[simState.mood]}
+                    onValueChange={v => setSimState({ ...simState, mood: v[0] })}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-4 block">Transport</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {(["walk", "cycle", "public", "car"] as const).map(m => (
+                      <Button
+                        key={m}
+                        variant={simState.transport === m ? "default" : "outline"}
+                        onClick={() => setSimState({ ...simState, transport: m })}
+                        className="capitalize"
+                      >
+                        {m}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
-            <input
-              type="range"
-              min={0}
-              max={7}
-              value={trips}
-              onChange={(e) => setTrips(Number(e.target.value))}
-              className="w-full h-2 bg-secondary rounded-full appearance-none cursor-pointer accent-primary"
-              aria-label="Number of car trips to replace with walking"
-            />
-            <div className="flex justify-between text-xs text-muted-foreground mt-1">
-              <span>0 trips</span>
-              <span>7 trips</span>
-            </div>
-          </motion.div>
 
-          {/* Chart */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="glass-card p-6 mb-6"
-          >
-            <h2 className="text-lg font-semibold text-foreground mb-4">
-              Projected Outcomes vs. Baseline
-            </h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={scenarioData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(260 30% 18%)" />
-                <XAxis dataKey="week" stroke="hsl(224 20% 78%)" fontSize={13} tickLine={false} />
-                <YAxis stroke="hsl(224 20% 78%)" fontSize={12} tickLine={false} />
-                <Tooltip
-                  contentStyle={{
-                    background: "hsl(260 50% 10%)",
-                    border: "1px solid hsl(260 40% 22%)",
-                    borderRadius: "12px",
-                    color: "hsl(230 50% 97%)",
-                    fontSize: "13px",
-                  }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="baselineEnergy"
-                  stroke="hsl(224 20% 50%)"
-                  strokeWidth={2}
-                  strokeDasharray="6 3"
-                  dot={false}
-                  name="Baseline Energy"
-                />
-                <Line
-                  type="monotone"
-                  dataKey="scenarioEnergy"
-                  stroke="hsl(174, 100%, 45%)"
-                  strokeWidth={3}
-                  dot={{ r: 4, fill: "hsl(174, 100%, 45%)", strokeWidth: 0 }}
-                  name="Scenario Energy"
-                  animationDuration={900}
-                  animationEasing="ease-in-out"
-                />
-                <Line
-                  type="monotone"
-                  dataKey="scenarioCO2"
-                  stroke="hsl(137, 55%, 60%)"
-                  strokeWidth={2}
-                  dot={{ r: 3, fill: "hsl(137, 55%, 60%)", strokeWidth: 0 }}
-                  name="Scenario CO₂"
-                  animationDuration={900}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </motion.div>
+            {/* Results */}
+            <div className="space-y-6">
+              {/* Wellness Card */}
+              <motion.div layout className="glass-card p-6 relative overflow-hidden">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 className="font-semibold text-foreground">Projected Wellness</h3>
+                    <p className="text-xs text-muted-foreground">vs. your 7-day average ({baseline.wellness})</p>
+                  </div>
+                  <Zap className={`w-5 h-5 ${wellnessDelta >= 0 ? "text-accent" : "text-muted-foreground"}`} />
+                </div>
 
-          {/* Delta Badges */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="grid grid-cols-2 gap-6"
-          >
-            <div className="glass-card p-8 text-center glow-cyan-strong">
-              <motion.p
-                key={energyDelta}
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.4, type: "spring", stiffness: 200 }}
-                className="text-5xl md:text-6xl font-extrabold text-accent drop-shadow-[0_0_25px_hsl(174,100%,45%,0.6)]"
-              >
-                +{energyDelta}%
-              </motion.p>
-              <p className="text-base text-muted-foreground mt-2 font-medium">Energy</p>
+                <div className="flex items-end gap-3">
+                  <span className="text-5xl font-bold">{simulatedWellness}</span>
+                  <span className={`text-sm mb-2 font-medium ${wellnessDelta >= 0 ? "text-green-400" : "text-red-400"}`}>
+                    {wellnessDelta > 0 ? "+" : ""}{wellnessDelta} pts
+                  </span>
+                </div>
+              </motion.div>
+
+              {/* CO2 Card */}
+              <motion.div layout className="glass-card p-6 relative overflow-hidden">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 className="font-semibold text-foreground">Daily CO₂ Impact</h3>
+                    <p className="text-xs text-muted-foreground">vs. your avg daily ({baselineDailyCo2.toFixed(1)} kg)</p>
+                  </div>
+                  <Leaf className={`w-5 h-5 ${co2Delta <= 0 ? "text-eco" : "text-orange-400"}`} />
+                </div>
+
+                <div className="flex items-end gap-3">
+                  <span className="text-5xl font-bold">{simulatedCo2}</span>
+                  <span className="text-xl font-medium text-muted-foreground mb-1">kg</span>
+                  <span className={`text-sm mb-2 font-medium ${co2Delta <= 0 ? "text-green-400" : "text-red-400"}`}>
+                    {co2Delta > 0 ? "+" : ""}{co2Delta.toFixed(1)} relative
+                  </span>
+                </div>
+              </motion.div>
+
+              <div className="glass-card p-6 bg-primary/5 border-primary/20">
+                <h4 className="font-semibold text-primary mb-2 flex items-center gap-2">
+                  <Brain className="w-4 h-4" /> AI Projection
+                </h4>
+                <p className="text-sm text-foreground/80">
+                  {wellnessDelta > 10
+                    ? "This adjustments would significantly boost your wellness!"
+                    : co2Delta < -1
+                      ? "Great choice! This transport switch massively reduces your footprint."
+                      : "Small adjustments to sleep and mood can have compounding effects."}
+                </p>
+              </div>
             </div>
-            <div className="glass-card p-8 text-center glow-green-strong">
-              <motion.p
-                key={co2Delta}
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.4, type: "spring", stiffness: 200 }}
-                className="text-5xl md:text-6xl font-extrabold text-eco drop-shadow-[0_0_25px_hsl(137,55%,60%,0.6)]"
-              >
-                {co2Delta} kg
-              </motion.p>
-              <p className="text-base text-muted-foreground mt-2 font-medium">CO₂</p>
-            </div>
-          </motion.div>
+          </div>
         </main>
       </PageTransition>
     </div>

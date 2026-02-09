@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Activity, BarChart3, Lightbulb, SlidersHorizontal, Target } from "lucide-react";
 
 const navItems = [
+  { path: "/checkin", label: "Check In", icon: Activity },
   { path: "/dashboard", label: "Dashboard", icon: BarChart3 },
   { path: "/insights", label: "Insights", icon: Lightbulb },
   { path: "/simulator", label: "Simulator", icon: SlidersHorizontal },
@@ -36,11 +37,10 @@ const Navbar = () => {
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  isActive
+                className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isActive
                     ? "text-foreground"
                     : "text-muted-foreground hover:text-foreground"
-                }`}
+                  }`}
               >
                 {isActive && (
                   <motion.div

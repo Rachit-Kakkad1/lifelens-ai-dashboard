@@ -1,271 +1,120 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Target, Zap, Leaf, CheckCircle2, SkipForward, TreePine, Brain, Flame } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import PageTransition from "@/components/PageTransition";
-import { weeklyMission } from "@/data/mockData";
+import { StorageService } from "@/services/storage";
+import { MissionState } from "@/types";
+import { INITIAL_MISSION } from "@/logic/mission";
+import { Target, Trophy, Bike, CheckCircle2, ArrowUpRight, Leaf } from "lucide-react";
 
 const MissionTracker = () => {
-  const [showActivation, setShowActivation] = useState(true);
-  const [completedRides, setCompletedRides] = useState(2);
-  const totalRides = 3;
+  const [mission, setMission] = useState<MissionState>(INITIAL_MISSION);
 
-  // Calculate progress
-  const progressPercent = (completedRides / totalRides) * 100;
-  const energyGained = Math.round((completedRides / totalRides) * 18);
-  const co2Saved = ((completedRides / totalRides) * 5.2).toFixed(1);
-
-  // Hide activation message after 2 seconds
   useEffect(() => {
-    const timer = setTimeout(() => setShowActivation(false), 2000);
-    return () => clearTimeout(timer);
+    StorageService.init();
+    const loaded = StorageService.getMissionState();
+    setMission(loaded);
   }, []);
 
-  const handleComplete = () => {
-    if (completedRides < totalRides) {
-      setCompletedRides((prev) => prev + 1);
-    }
-  };
-
-  const handleSkip = () => {
-    // Skip logic - could decrement or just show feedback
-  };
-
-  const circumference = 2 * Math.PI * 45;
-  const strokeDashoffset = circumference - (progressPercent / 100) * circumference;
+  const progress = Math.min(100, (mission.currentCount / mission.targetCount) * 100);
 
   return (
-    <div className="min-h-screen gradient-bg">
+    <div className="min-h-screen gradient-bg relative overflow-x-hidden">
       <Navbar />
-      <PageTransition>
-        <main className="pt-20 pb-10 px-6 max-w-5xl mx-auto">
-          {/* Activation Success Animation */}
-          <AnimatePresence>
-            {showActivation && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.3 }}
-                className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
-              >
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="glass-card p-10 text-center glow-primary"
-                >
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                    className="text-5xl mb-4"
-                  >
-                    🎯
-                  </motion.div>
-                  <h2 className="text-2xl font-bold text-foreground mb-2">
-                    Mission Activated
-                  </h2>
-                  <p className="text-muted-foreground text-sm">
-                    You're on track to gain{" "}
-                    <span className="text-accent font-semibold">+18% energy</span> and save{" "}
-                    <span className="text-eco font-semibold">5.2 kg CO₂</span> this week.
-                  </p>
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
 
+
+      <PageTransition>
+        <main className="pt-20 pb-10 px-6 max-w-7xl mx-auto">
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-8"
+            className="mb-8 flex justify-between items-end"
           >
-            <h1 className="text-3xl font-bold text-foreground mb-1">
-              Weekly Mission Tracker
-            </h1>
-            <p className="text-muted-foreground text-sm">
-              Track your progress and unlock your full impact
-            </p>
-          </motion.div>
-
-          {/* Progress Tracker Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="glass-card p-8 mb-6"
-          >
-            <div className="flex items-center gap-3 mb-6">
-              <Target className="w-5 h-5 text-primary" />
-              <h2 className="text-xl font-semibold text-foreground">
-                {weeklyMission.title}
-              </h2>
-            </div>
-
-            {/* Circular Progress Ring */}
-            <div className="flex flex-col md:flex-row items-center gap-8">
-              <div className="relative w-32 h-32">
-                <svg className="w-full h-full transform -rotate-90">
-                  {/* Background circle */}
-                  <circle
-                    cx="64"
-                    cy="64"
-                    r="45"
-                    stroke="hsl(260 30% 18%)"
-                    strokeWidth="8"
-                    fill="none"
-                  />
-                  {/* Progress circle */}
-                  <motion.circle
-                    cx="64"
-                    cy="64"
-                    r="45"
-                    stroke="hsl(261 100% 65%)"
-                    strokeWidth="8"
-                    fill="none"
-                    strokeLinecap="round"
-                    initial={{ strokeDashoffset: circumference }}
-                    animate={{ strokeDashoffset }}
-                    transition={{ duration: 0.8, ease: [0.22, 0.8, 0.28, 1] }}
-                    style={{
-                      strokeDasharray: circumference,
-                      filter: "drop-shadow(0 0 8px hsl(261 100% 65% / 0.5))",
-                    }}
-                  />
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <motion.span
-                    key={completedRides}
-                    initial={{ scale: 0.8 }}
-                    animate={{ scale: 1 }}
-                    className="text-2xl font-bold text-foreground"
-                  >
-                    {completedRides}/{totalRides}
-                  </motion.span>
-                  <span className="text-xs text-muted-foreground">rides</span>
-                </div>
-              </div>
-
-              {/* Progress Stats */}
-              <div className="flex-1 grid grid-cols-2 gap-4">
-                <div className="glass-card p-4 glow-cyan">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Zap className="w-4 h-4 text-accent" />
-                    <span className="text-xs text-muted-foreground">Energy gained</span>
-                  </div>
-                  <motion.p
-                    key={energyGained}
-                    initial={{ scale: 0.9 }}
-                    animate={{ scale: 1 }}
-                    className="text-2xl font-bold text-accent"
-                  >
-                    +{energyGained}%
-                  </motion.p>
-                </div>
-                <div className="glass-card p-4 glow-green">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Leaf className="w-4 h-4 text-eco" />
-                    <span className="text-xs text-muted-foreground">CO₂ saved</span>
-                  </div>
-                  <motion.p
-                    key={co2Saved}
-                    initial={{ scale: 0.9 }}
-                    animate={{ scale: 1 }}
-                    className="text-2xl font-bold text-eco"
-                  >
-                    −{co2Saved} kg
-                  </motion.p>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Daily Check-in Buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="glass-card p-6 mb-6"
-          >
-            <p className="text-sm text-muted-foreground mb-4">Daily Check-in</p>
-            <div className="flex gap-4">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleComplete}
-                disabled={completedRides >= totalRides}
-                className="flex-1 btn-glow px-6 py-4 rounded-xl text-primary-foreground font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background"
-              >
-                <CheckCircle2 className="w-5 h-5" />
-                Mark ride complete
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleSkip}
-                className="flex-1 bg-secondary hover:bg-secondary/80 px-6 py-4 rounded-xl text-secondary-foreground font-semibold flex items-center justify-center gap-2 transition-colors focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 focus:ring-offset-background"
-              >
-                <SkipForward className="w-5 h-5" />
-                Skip today
-              </motion.button>
-            </div>
-          </motion.div>
-
-          {/* Motivation Insight */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="glass-card p-5 mb-6 flex items-start gap-3"
-          >
-            <Brain className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
             <div>
-              <p className="text-foreground text-sm">
-                You're <span className="text-primary font-semibold">{Math.round(progressPercent)}%</span> toward your weekly goal.
-              </p>
-              <p className="text-muted-foreground text-sm mt-1">
-                {completedRides < totalRides
-                  ? `${totalRides - completedRides} more ride${totalRides - completedRides > 1 ? "s" : ""} unlocks full impact.`
-                  : "Amazing! You've unlocked your full impact this week!"}
-              </p>
+              <p className="text-sm text-muted-foreground mb-1">Weekly Challenge</p>
+              <h1 className="text-3xl font-bold text-foreground">Mission Control</h1>
+            </div>
+            <div className="text-right">
+              <p className="text-2xl font-bold text-accent">{mission.completed ? "COMPLETED" : "IN PROGRESS"}</p>
+              <p className="text-xs text-muted-foreground">Resets in 2 days</p>
             </div>
           </motion.div>
 
-          {/* End-of-Week Reward Preview */}
+          {/* Active Mission Card */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="glass-card p-6"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className={`glass-card p-8 border-l-4 ${mission.completed ? "border-l-accent" : "border-l-primary"} relative overflow-hidden`}
           >
-            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-4">
-              If completed by Sunday
-            </p>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="text-center">
-                <div className="w-12 h-12 mx-auto rounded-full bg-eco/10 flex items-center justify-center mb-2">
-                  <TreePine className="w-6 h-6 text-eco" />
-                </div>
-                <p className="text-lg font-bold text-foreground">2.1</p>
-                <p className="text-xs text-muted-foreground">Trees equiv.</p>
+            {mission.completed && (
+              <div className="absolute top-0 right-0 p-4">
+                <Trophy className="w-16 h-16 text-accent/20" />
               </div>
-              <div className="text-center">
-                <div className="w-12 h-12 mx-auto rounded-full bg-accent/10 flex items-center justify-center mb-2">
-                  <Brain className="w-6 h-6 text-accent" />
-                </div>
-                <p className="text-lg font-bold text-foreground">Week 3</p>
-                <p className="text-xs text-muted-foreground">Wellness streak</p>
+            )}
+
+            <div className="flex items-start gap-4 mb-6">
+              <div className={`p-3 rounded-xl ${mission.completed ? "bg-accent/20 text-accent" : "bg-primary/20 text-primary"}`}>
+                <Bike className="w-8 h-8" />
               </div>
-              <div className="text-center">
-                <div className="w-12 h-12 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-2">
-                  <Flame className="w-6 h-6 text-primary" />
-                </div>
-                <p className="text-lg font-bold text-foreground">92%</p>
-                <p className="text-xs text-muted-foreground">Consistency</p>
+              <div>
+                <h2 className="text-xl font-bold text-foreground">{mission.title}</h2>
+                <p className="text-muted-foreground">Replace your car commute with cycling.</p>
+              </div>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="mb-2 flex justify-between text-sm font-medium">
+              <span>Progress</span>
+              <span>{mission.currentCount} / {mission.targetCount} rides</span>
+            </div>
+            <div className="h-4 bg-secondary rounded-full overflow-hidden mb-8">
+              <motion.div
+                className={`h-full ${mission.completed ? "bg-accent" : "bg-primary"}`}
+                initial={{ width: 0 }}
+                animate={{ width: `${progress}%` }}
+                transition={{ duration: 1, delay: 0.2 }}
+              />
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="p-4 bg-background/30 rounded-lg">
+                <p className="text-xs text-muted-foreground mb-1">Energy Gained</p>
+                <p className="text-xl font-bold flex items-center gap-1">
+                  +{mission.totalEnergyGained}% <ArrowUpRight className="w-4 h-4 text-green-400" />
+                </p>
+              </div>
+              <div className="p-4 bg-background/30 rounded-lg">
+                <p className="text-xs text-muted-foreground mb-1">CO₂ Avoided</p>
+                <p className="text-xl font-bold flex items-center gap-1">
+                  {mission.totalCo2Saved.toFixed(1)}kg <Leaf className="w-4 h-4 text-eco" />
+                </p>
               </div>
             </div>
           </motion.div>
+
+          {/* Completion Banner */}
+          <AnimatePresence>
+            {mission.completed && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                className="mt-8 p-6 bg-accent/10 border border-accent/20 rounded-xl flex items-center gap-4"
+              >
+                <div className="w-12 h-12 bg-accent/20 rounded-full flex items-center justify-center text-accent">
+                  <Trophy className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-foreground">Mission Accomplished!</h3>
+                  <p className="text-sm text-foreground/80">
+                    You've hit your weekly target. Validated by LifeLens logic.
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </main>
       </PageTransition>
     </div>
