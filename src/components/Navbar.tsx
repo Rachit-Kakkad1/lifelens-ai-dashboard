@@ -23,11 +23,11 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
         <button
           onClick={() => navigate("/dashboard")}
-          className="flex items-center gap-2 text-foreground font-semibold text-lg"
+          className="flex items-center gap-3 text-foreground font-semibold text-lg"
         >
-          <Activity className="w-5 h-5 text-primary" />
-          <span>LifeLens</span>
-          <span className="text-xs text-primary font-medium ml-1">AI</span>
+          <img src="/logo.svg" alt="LifeLens Logo" className="w-8 h-8 drop-shadow-lg" />
+          <span className="tracking-tight">LifeLens</span>
+          <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded border border-primary/20 font-bold uppercase tracking-wider">AI</span>
         </button>
 
         <div className="flex items-center gap-1">

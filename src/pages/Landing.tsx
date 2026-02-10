@@ -78,7 +78,7 @@ const Landing = () => {
                         <Button
                             variant="outline"
                             size="lg"
-                            className="rounded-full px-8 py-7 text-lg border-primary/20 hover:bg-primary/5 transition-all duration-300"
+                            className="rounded-full px-8 py-7 text-lg border-primary/20 bg-background/50 hover:bg-primary/20 hover:text-primary transition-all duration-300 backdrop-blur-sm"
                             onClick={() => navigate("/onboarding")} // Or login flow
                         >
                             Continue with Email

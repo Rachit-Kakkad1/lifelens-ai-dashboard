@@ -19,7 +19,7 @@ function TestLogin() {
   return (
     <button
       onClick={handleLogin}
-      className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors mt-6 underline underline-offset-4"
+      className="text-sm font-medium text-muted-foreground hover:text-primary hover:opacity-100 transition-all mt-6 underline underline-offset-4"
     >
       Continue with Email
     </button>
