@@ -1,73 +1,81 @@
-# Welcome to your Lovable project
+# LifeLens AI 🌿👁️
+> **The Intelligent Ecosystem for Personal & Planetary Health.**
 
-## Project info
+![LifeLens Banner](/public/logo.svg)
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+**LifeLens** is the first AI-powered dual-impact tracker that synchronizes your **internal wellness** (sleep, mood, energy) with your **external footprint** (CO2 emissions). Built for the Gemini Developer Competition.
 
-## How can I edit this code?
+> 📖 **[Read the Intelligence Manual](./USER_MANUAL.md)** — *Setup, Usage & Local AI Config*
 
-There are several ways of editing your application.
+---
 
-**Use Lovable**
+## 🚀 The Vision
+> *"What if your daily habits could heal you and the planet simultaneously?"*
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+We mostly treat health and sustainability as separate goals. **LifeLens** proves they are the same. By tracking simple daily inputs, our **Gemini-powered engine** reveals hidden correlations—showing how cycling to work not only reduces 2.5kg of CO2 but boosts your predicted energy levels by 18%.
 
-Changes made via Lovable will be committed automatically to this repo.
+---
 
-**Use your preferred IDE**
+## ✨ Key Features
+### 1. 🧠 Cinematic Wellness Intelligence
+A "God-Tier" UI that turns boring data into beautiful, Apple-style visualizations.
+- **Real-time Gradient Graphs**: Visualizing your check-in data instantly.
+- **Glassmorphism Design System**: A mesmerizing UI that feels alive.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### 2. 🌍 Dual-Impact Analytics
+Track two scores in one view:
+- **Internal Health Score**: Aggregated from Sleep, Energy, and Mood.
+- **External Planet Score**: Calculated from transport choices and offset actions.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### 3. 🤖 Gemini AI Behavioral Coach
+Our "Behavioral Observation" engine analyzes your trends to offer **predictive insights**, not just historical logs.
+- *"You sleep 15% better on days you cycle."*
+- *"Your carbon footprint drops 40% when your mood is 'Balanced'."*
 
-Follow these steps:
+### 4. ⚡ Instant "AI Reflection"
+Zero-latency feedback on every check-in. The app acknowledges your choices immediately with positive reinforcement loops.
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+---
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+## 🛠️ Tech Stack ("The Modern Vercel Stack")
+- **Frontend**: React (Vite), TypeScript, TailwindCSS
+- **Animation**: Framer Motion (Complex orchestrations)
+- **Visualization**: Recharts (Customized gradients)
+- **AI/Backend**: Supabase (Auth/DB), Google Gemini (Intelligence)
+- **Deployment**: Vercel
 
-# Step 3: Install the necessary dependencies.
-npm i
+---
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+## 📸 Snapshots
+| Hero Section | Dashboard |
+|---|---|
+| *Cinematic Entrance* | *Live Sync Core* |
+
+---
+
+## 💿 Quick Start
+
+### 1. Clone & Install
+```bash
+git clone https://github.com/your-username/lifelens-ai-dashboard.git
+cd lifelens-ai-dashboard
+npm install
 ```
 
-**Edit a file directly in GitHub**
+### 2. Run Locally
+```bash
+npm run dev
+```
+Open `http://localhost:8080` to see the magic.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+---
 
-**Use GitHub Codespaces**
+## 🏆 Hackathon Checklist
+- [x] **Solves a Real Problem**: Disconnect between personal health and climate action.
+- [x] **Gemini Integration**: Behavioral pattern recognition.
+- [x] **"Wow" Factor**: High-fidelity animations and "Apple-like" polish.
+- [x] **Complete Flow**: Landing -> Onboarding -> Check-in -> Dashboard -> Impact.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+---
 
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+> Built with 💜 and ☕ by the LifeLens Team.

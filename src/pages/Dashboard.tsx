@@ -69,7 +69,7 @@ const Dashboard = () => {
           {/* 1. HERO HEADER — Dual Intelligence */}
           <section>
             <div className="flex justify-between items-end mb-6">
-              <h1 className="text-3xl font-bold text-foreground">Your Life Impact Today</h1>
+              <h1 className="text-3xl font-bold text-foreground tracking-tight">Live Biometric & Climate Sync</h1>
               <p className="text-sm text-primary font-medium italic">"Small daily choices shape both your health and the planet."</p>
             </div>
 
