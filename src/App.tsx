@@ -5,7 +5,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import Onboarding from "./pages/Onboarding";
+import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
+
 import Insights from "./pages/Insights";
 import Simulator from "./pages/Simulator";
 import Mission from "./pages/Mission";
@@ -24,8 +26,10 @@ const App = () => (
       <BrowserRouter>
         <AnimatePresence mode="wait">
           <Routes>
-            <Route path="/" element={<Onboarding />} />
+            <Route path="/" element={<Landing />} />
+            <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/checkin" element={<CheckIn />} />
+
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/insights" element={<Insights />} />
             <Route path="/simulator" element={<Simulator />} />

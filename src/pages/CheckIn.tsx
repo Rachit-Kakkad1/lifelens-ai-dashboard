@@ -73,12 +73,31 @@ const CheckIn = () => {
             const updatedMission = updateMissionProgress(currentMission, values.transport, values.energy);
             StorageService.saveMissionState(updatedMission);
 
-            toast.success("Check-in saved!", {
-                description: `Wellness: ${wellness} | CO₂: ${co2}kg`
+            // 4. Instant AI Reflection (Simulated)
+            let insight = "Small choices like this build long-term health and climate impact.";
+
+            // Transport logic
+            if (values.transport === "walk" || values.transport === "cycle") {
+                insight = `Choosing to ${values.transport} reduced your CO₂ to zero! ${insight}`;
+            } else if (values.transport === "public") {
+                insight = `Choosing public transport reduced your CO₂ today. ${insight}`;
+            }
+
+            // Wellness logic prefix
+            if (values.sleep >= 7 && values.energy >= 7) {
+                insight = `You slept well and felt energized. ${insight}`;
+            } else if (values.sleep < 5) {
+                insight = `Rest is key to recovery. ${insight}`;
+            }
+
+            toast("AI Daily Insight", {
+                description: insight,
+                duration: 5000,
+                className: "glass-card border-primary/20"
             });
 
-            // 4. Navigate to Dashboard
-            setTimeout(() => navigate("/dashboard"), 500);
+            // 5. Navigate to Dashboard
+            setTimeout(() => navigate("/dashboard"), 1500); // Slight delay to read toast
 
         } catch (error) {
             console.error(error);
@@ -100,7 +119,7 @@ const CheckIn = () => {
                     <Card className="glass-card border-none">
                         <CardHeader>
                             <CardTitle className="text-2xl">Daily Check-In</CardTitle>
-                            <CardDescription>Target your wellness and impact goals.</CardDescription>
+                            <CardDescription>Reflect on today’s habits to track your health and environmental impact.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <Form {...form}>
@@ -112,9 +131,17 @@ const CheckIn = () => {
                                         name="sleep"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="flex items-center gap-2">
-                                                    <Brain className="w-4 h-4 text-purple-400" />
-                                                    Sleep Quality ({field.value})
+                                                <FormLabel className="flex flex-col gap-2">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="flex items-center gap-2 text-base">
+                                                            <Brain className="w-4 h-4 text-purple-400" />
+                                                            How well did you sleep last night?
+                                                        </span>
+                                                        <span className="text-xs font-mono bg-secondary/50 px-2 py-1 rounded">{field.value}</span>
+                                                    </div>
+                                                    <span className="text-xs text-muted-foreground font-normal">
+                                                        1 = Very poor • 5 = Okay • 10 = Deep restful sleep
+                                                    </span>
                                                 </FormLabel>
                                                 <FormControl>
                                                     <Slider
@@ -137,9 +164,17 @@ const CheckIn = () => {
                                         name="energy"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="flex items-center gap-2">
-                                                    <span className="text-yellow-400">⚡</span>
-                                                    Energy Level ({field.value})
+                                                <FormLabel className="flex flex-col gap-2">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="flex items-center gap-2 text-base">
+                                                            <span className="text-yellow-400">⚡</span>
+                                                            How energized did you feel today?
+                                                        </span>
+                                                        <span className="text-xs font-mono bg-secondary/50 px-2 py-1 rounded">{field.value}</span>
+                                                    </div>
+                                                    <span className="text-xs text-muted-foreground font-normal">
+                                                        1 = Exhausted • 5 = Normal • 10 = Fully energized
+                                                    </span>
                                                 </FormLabel>
                                                 <FormControl>
                                                     <Slider
@@ -162,9 +197,17 @@ const CheckIn = () => {
                                         name="mood"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="flex items-center gap-2">
-                                                    <span className="text-pink-400">😊</span>
-                                                    Mood Level ({field.value})
+                                                <FormLabel className="flex flex-col gap-2">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="flex items-center gap-2 text-base">
+                                                            <span className="text-pink-400">😊</span>
+                                                            How was your overall mood today?
+                                                        </span>
+                                                        <span className="text-xs font-mono bg-secondary/50 px-2 py-1 rounded">{field.value}</span>
+                                                    </div>
+                                                    <span className="text-xs text-muted-foreground font-normal">
+                                                        1 = Low • 5 = Balanced • 10 = Very positive
+                                                    </span>
                                                 </FormLabel>
                                                 <FormControl>
                                                     <Slider
@@ -187,9 +230,9 @@ const CheckIn = () => {
                                         name="transport"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="flex items-center gap-2">
+                                                <FormLabel className="flex items-center gap-2 text-base">
                                                     <Leaf className="w-4 h-4 text-green-400" />
-                                                    Main Transport Today
+                                                    How did you mostly travel today?
                                                 </FormLabel>
                                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                                     <FormControl>
@@ -225,8 +268,10 @@ const CheckIn = () => {
                                         )}
                                     />
 
-                                    <Button type="submit" className="w-full" disabled={isSubmitting}>
-                                        {isSubmitting ? "Saving..." : "Save Daily Entry"}
+                                    <Button type="submit" className="w-full text-lg h-12 gap-2" disabled={isSubmitting}>
+                                        {isSubmitting ? "Saving Analysis..." :
+                                            <>Save & See Today’s Impact <span aria-hidden="true">→</span></>
+                                        }
                                     </Button>
                                 </form>
                             </Form>

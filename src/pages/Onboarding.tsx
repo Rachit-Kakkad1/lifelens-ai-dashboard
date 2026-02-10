@@ -1,6 +1,31 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+
+function TestLogin() {
+  const handleLogin = async () => {
+    const { error } = await supabase.auth.signInWithOtp({
+      email: "kakkadrachit1@gmail.com",
+    });
+
+    if (error) {
+      alert(error.message);
+    } else {
+      alert("Magic link sent! Check your email.");
+    }
+  };
+
+  return (
+    <button
+      onClick={handleLogin}
+      className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors mt-6 underline underline-offset-4"
+    >
+      Continue with Email
+    </button>
+  );
+}
+
 
 const Onboarding = () => {
   const navigate = useNavigate();
@@ -29,7 +54,7 @@ const Onboarding = () => {
             Intelligence
           </h1>
           <p className="text-muted-foreground text-base mb-8 leading-relaxed">
-            Discover how your daily choices shape your health and the planet. 
+            Discover how your daily choices shape your health and the planet.
             Backed by real data, powered by AI insight.
           </p>
         </motion.div>
@@ -45,6 +70,11 @@ const Onboarding = () => {
         >
           Visualize Your Next 90 Days →
         </motion.button>
+
+        <div className="mt-8">
+          <TestLogin />
+        </div>
+
       </motion.div>
     </div>
   );
