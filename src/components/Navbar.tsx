@@ -18,23 +18,23 @@ const Navbar = () => {
     <motion.nav
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      className="fixed top-6 left-0 right-0 mx-auto z-50 w-fit min-w-[320px] max-w-full glass-card border border-white/20 rounded-full shadow-[0_8px_32px_0_rgba(31,38,135,0.37)] backdrop-blur-2xl px-6 py-2 flex items-center justify-center gap-6"
+      className="fixed top-4 md:top-6 left-0 right-0 mx-auto z-50 w-fit max-w-[95vw] glass-card border border-white/20 rounded-full shadow-[0_8px_32px_0_rgba(31,38,135,0.37)] backdrop-blur-2xl px-3 md:px-6 py-2 flex items-center justify-center gap-2 md:gap-6 transition-all duration-300"
     >
       <button
         onClick={() => navigate("/")}
         className="flex items-center gap-2 text-foreground font-semibold text-lg hover:opacity-80 transition-opacity"
       >
-        <span className="tracking-tight text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/90">LifeLens AI</span>
+        <span className="tracking-tight text-sm md:text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/90 whitespace-nowrap">LifeLens AI</span>
       </button>
 
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-0.5 md:gap-1">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
             <button
               key={item.path}
               onClick={() => navigate(item.path)}
-              className={`relative px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${isActive
+              className={`relative px-2.5 md:px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${isActive
                 ? "text-foreground"
                 : "text-muted-foreground hover:text-foreground"
                 }`}

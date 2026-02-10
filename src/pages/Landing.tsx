@@ -29,7 +29,7 @@ const Landing = () => {
             <Navbar />
 
             {/* 1. HERO SECTION */}
-            <section className="relative min-h-[90vh] flex flex-col items-center justify-center pt-24 px-6 text-center">
+            <section className="relative min-h-[90vh] flex flex-col items-center justify-center pt-28 md:pt-24 px-6 text-center">
                 {/* Background Ambient Glows */}
                 <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] -z-10 animate-pulse-glow" />
                 <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-accent/10 rounded-full blur-[100px] -z-10" />
@@ -289,7 +289,7 @@ const Landing = () => {
             </section>
 
             {/* 4. AI COACH MOMENT */}
-            <section className="py-40 px-6 relative overflow-hidden flex items-center justify-center">
+            <section className="py-20 md:py-40 px-6 relative overflow-hidden flex items-center justify-center">
                 {/* Cinematic Backdrop */}
                 <div className="absolute inset-0 bg-gradient-to-b from-background via-accent/5 to-background z-0" />
                 <div className="absolute w-[800px] h-[800px] bg-primary/5 rounded-full blur-[150px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-0 animate-pulse-slow" />

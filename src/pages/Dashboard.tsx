@@ -242,12 +242,12 @@ const Dashboard = () => {
                   <h2 className="text-2xl font-black mb-1">Cycle 3× This Week</h2>
                   <p className="text-sm text-muted-foreground italic">One habit. Two impacts.</p>
                 </div>
-                <div className="flex gap-4 items-center">
-                  <div className="text-center px-4">
+                <div className="flex flex-wrap justify-center gap-4 items-center mt-4 md:mt-0">
+                  <div className="text-center px-4 border-r border-border last:border-0 md:border-0">
                     <p className="text-lg font-bold text-accent">+18%</p>
                     <p className="text-[10px] text-muted-foreground uppercase">Energy</p>
                   </div>
-                  <div className="w-px h-10 bg-border" />
+                  <div className="hidden md:block w-px h-10 bg-border" />
                   <div className="text-center px-4">
                     <p className="text-lg font-bold text-eco">−5.2 kg</p>
                     <p className="text-[10px] text-muted-foreground uppercase">CO₂</p>
@@ -255,7 +255,7 @@ const Dashboard = () => {
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="btn-glow px-8 py-3 rounded-xl font-bold ml-4"
+                    className="btn-glow px-8 py-3 rounded-xl font-bold md:ml-4 w-full md:w-auto"
                   >
                     Commit to Impact
                   </motion.button>

@@ -1,0 +1,16 @@
+{
+    "name": "LifeLens AI",
+    "short_name": "LifeLens",
+    "description": "The Intelligent Ecosystem for Personal & Planetary Health",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#0F0F1A",
+    "theme_color": "#8B5CF6",
+    "icons": [
+        {
+            "src": "/logo.svg",
+            "type": "image/svg+xml",
+            "sizes": "512x512"
+        }
+    ]
+}

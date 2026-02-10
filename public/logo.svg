@@ -1,32 +1,45 @@
-<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="lensGradient" x1="20" y1="20" x2="180" y2="180" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#06b6d4" /> <!-- Cyan-500 -->
-      <stop offset="100%" stop-color="#3b82f6" /> <!-- Blue-500 -->
-    </linearGradient>
-    <linearGradient id="leafGradient" x1="100" y1="0" x2="100" y2="200" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#22c55e" /> <!-- Green-500 -->
-      <stop offset="100%" stop-color="#15803d" /> <!-- Green-700 -->
-    </linearGradient>
-    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="5" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over" />
-    </filter>
-  </defs>
-  
-  <!-- Outer Glow Circle (Lens/Eye) -->
-  <circle cx="100" cy="100" r="90" stroke="url(#lensGradient)" stroke-width="8" fill="none" opacity="0.8" filter="url(#glow)" />
-  
-  <!-- Inner Iris/Pupil abstract (Tech) -->
-  <circle cx="100" cy="100" r="30" fill="url(#lensGradient)" opacity="0.9" />
-  
-  <!-- Leaf Overlay (Nature) -->
-  <path d="M100 20 Q160 20 160 80 Q160 140 100 180 Q40 140 40 80 Q40 20 100 20 Z" 
-        fill="url(#leafGradient)" 
-        opacity="0.7" 
-        style="mix-blend-mode: overlay;" />
-        
-  <!-- Tech details -->
-  <path d="M100 100 L140 100" stroke="white" stroke-width="2" opacity="0.5" />
-  <circle cx="140" cy="100" r="3" fill="white" />
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<linearGradient id="paint0_linear" x1="256" y1="0" x2="256" y2="512" gradientUnits="userSpaceOnUse">
+<stop stop-color="#8B5CF6"/>
+<stop offset="1" stop-color="#06B6D4"/>
+</linearGradient>
+<linearGradient id="paint1_linear" x1="100" y1="100" x2="412" y2="412" gradientUnits="userSpaceOnUse">
+<stop stop-color="#A78BFA"/>
+<stop offset="1" stop-color="#2DD4BF"/>
+</linearGradient>
+<filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+<feGaussianBlur stdDeviation="15" result="coloredBlur"/>
+<feMerge>
+<feMergeNode in="coloredBlur"/>
+<feMergeNode in="SourceGraphic"/>
+</feMerge>
+</filter>
+</defs>
+
+<!-- Background Glow -->
+<circle cx="256" cy="256" r="200" fill="url(#paint0_linear)" fill-opacity="0.1" filter="url(#glow)" />
+
+<!-- The Lens Ring (Subtle Tech Container) -->
+<circle cx="256" cy="256" r="230" stroke="url(#paint0_linear)" stroke-width="8" stroke-opacity="0.5" />
+<circle cx="256" cy="256" r="245" stroke="white" stroke-width="2" stroke-opacity="0.2" stroke-dasharray="20 40" />
+
+<!-- The Bio-Digital Core (Abstract Leaf/Eye Convergence) -->
+<path d="M256 100 
+C 320 100, 380 160, 380 256 
+C 380 352, 320 412, 256 412 
+C 192 412, 132 352, 132 256 
+C 132 160, 192 100, 256 100 Z" 
+fill="none" stroke="url(#paint1_linear)" stroke-width="12" />
+
+<!-- The Iris/Pupil (Focus Point) -->
+<circle cx="256" cy="256" r="60" fill="white" fill-opacity="0.1" stroke="white" stroke-width="4" />
+<circle cx="256" cy="256" r="25" fill="#2DD4BF" />
+
+<!-- Stylized Leaf Veins / Circuit Lines -->
+<path d="M256 100 L 256 230" stroke="white" stroke-width="4" stroke-opacity="0.4" />
+<path d="M256 412 L 256 282" stroke="white" stroke-width="4" stroke-opacity="0.4" />
+<path d="M132 256 L 230 256" stroke="white" stroke-width="4" stroke-opacity="0.4" />
+<path d="M380 256 L 282 256" stroke="white" stroke-width="4" stroke-opacity="0.4" />
+
 </svg>
