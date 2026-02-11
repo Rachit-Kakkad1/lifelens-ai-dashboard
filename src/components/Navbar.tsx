@@ -27,7 +27,7 @@ const Navbar = () => {
         <span className="tracking-tight text-sm md:text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/90 whitespace-nowrap">LifeLens AI</span>
       </button>
 
-      <div className="flex items-center gap-0.5 md:gap-1">
+      <div className="flex items-center gap-1 md:gap-2">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (

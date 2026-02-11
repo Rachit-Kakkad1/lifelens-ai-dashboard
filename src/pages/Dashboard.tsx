@@ -96,7 +96,7 @@ const Dashboard = () => {
     <div className="min-h-screen gradient-bg">
       <Navbar />
       <PageTransition>
-        <main className="pt-20 pb-10 px-6 max-w-7xl mx-auto space-y-8">
+        <main className="pt-32 pb-10 px-6 max-w-7xl mx-auto space-y-8">
 
           {/* 1. HERO HEADER — Dual Intelligence */}
           <section>
