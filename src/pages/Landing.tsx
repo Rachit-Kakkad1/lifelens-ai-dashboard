@@ -47,7 +47,7 @@ const Landing = () => {
                             The Intelligent Ecosystem
                         </span>
                         <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-[1.1] mb-6 drop-shadow-sm">
-                            See How Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Daily Habits</span> Shape Your Health and the Planet
+                            See How Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Daily Habits</span> Shape Your Health and the Planet.
                         </h1>
                     </motion.div>
 
@@ -58,7 +58,7 @@ const Landing = () => {
                         transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
                         className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto font-light leading-relaxed"
                     >
-                        LifeLens turns sleep, mood, and movement into clear insights, future predictions, and one weekly action that improves your energy while reducing your carbon footprint.
+                        LifeLens turns sleep, mood, and movement into clear insights, proving that self-care is the ultimate climate action.
                     </motion.p>
 
 
@@ -71,17 +71,15 @@ const Landing = () => {
                         <Button
                             onClick={() => navigate("/onboarding")}
                             size="lg"
-                            className="rounded-full px-8 py-7 text-lg shadow-[0_0_30px_-5px_rgba(var(--primary),0.6)] hover:shadow-[0_0_50px_-10px_rgba(var(--primary),0.8)] transition-all duration-300"
+                            className="relative rounded-full px-10 py-8 text-xl font-bold transition-all duration-300
+                            bg-primary text-primary-foreground hover:scale-105 hover:shadow-[0_0_40px_-5px_hsl(var(--primary))]
+                            shadow-[0_0_20px_-5px_hsl(var(--primary))]"
                         >
-                            Start Your First Check-In <ChevronRight className="ml-2 w-5 h-5" />
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="lg"
-                            className="rounded-full px-8 py-7 text-lg border-primary/20 bg-background/50 hover:bg-primary/20 hover:text-primary transition-all duration-300 backdrop-blur-sm"
-                            onClick={() => navigate("/onboarding")} // Or login flow
-                        >
-                            Continue with Email
+                            <span className="relative z-10 flex items-center gap-2">
+                                Start your 7-day impact journey <ChevronRight className="w-6 h-6" />
+                            </span>
+                            {/* Inner Glow Pulse */}
+                            <div className="absolute inset-0 rounded-full bg-white/20 animate-pulse-slow" />
                         </Button>
                     </motion.div>
 

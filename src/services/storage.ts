@@ -8,7 +8,7 @@ const STORAGE_KEYS = {
     MISSION: "lifelens_mission"
 };
 
-const CURRENT_VERSION = 1;
+const CURRENT_VERSION = 3;
 
 export const StorageService = {
     init: () => {
@@ -27,7 +27,26 @@ export const StorageService = {
             name: "User",
             onboardingCompleted: false
         }));
-        localStorage.setItem(STORAGE_KEYS.ENTRIES, JSON.stringify([]));
+
+        // SEED HISTORY (6 Days of "Average/Bad" data)
+        const ONE_DAY = 24 * 60 * 60 * 1000;
+        const today = new Date();
+        const seededEntries = Array.from({ length: 6 }).map((_, i) => {
+            const date = new Date(today.getTime() - ((6 - i) * ONE_DAY));
+            return {
+                id: `seed-${i}`,
+                date: date.toISOString().split('T')[0],
+                timestamp: date.getTime(),
+                sleep: 6 + Math.random(), // 6-7h sleep
+                energy: 5 + Math.random() * 2, // 5-7 energy
+                mood: 5 + Math.random() * 2, // 5-7 mood
+                transport: i % 2 === 0 ? "car" : "public", // Mostly car/public
+                wellnessScore: 65 + (i * 2), // Slightly rising but low
+                co2Emitted: i % 2 === 0 ? 2.5 : 0.5
+            };
+        });
+
+        localStorage.setItem(STORAGE_KEYS.ENTRIES, JSON.stringify(seededEntries));
         localStorage.setItem(STORAGE_KEYS.MISSION, JSON.stringify(INITIAL_MISSION));
     },
 

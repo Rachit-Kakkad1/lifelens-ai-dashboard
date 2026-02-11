@@ -33,10 +33,23 @@ export const generateCoachInsight = (entries: DailyEntry[]): CoachInsight => {
     const carDays = weekly.filter(e => e.transport === "car").length;
     const cyclingDays = weekly.filter(e => e.transport === "cycle").length;
 
-    // Pattern 1: Car usage vs Energy/Wellness
-    if (carDays >= 3 && latest.energy < 7) {
+    // ADAPTIVE: Check LATEST entry specifically for immediate feedback (The "WOW" Moment)
+    // Positive Shift
+    if (latest.transport === "cycle" || latest.transport === "walk") {
         return {
-            text: "Your recent car-heavy days are quietly lowering your energy while raising emissions; one short cycling trip tomorrow could restore both your mood and your footprint.",
+            text: "Today’s shift from driving to cycling reduced your emissions and stabilized your weekly energy trend. Small habits like this begin to compound within days.",
+            type: "balanced",
+            correlations: {
+                health: "Active transport correlates with higher sleep quality and morning alertness.",
+                planet: "You have avoided approx 7.5kg of CO₂ this week through active choices."
+            }
+        };
+    }
+
+    // Negative/Warning (Car)
+    if (latest.transport === "car") {
+        return {
+            text: "Driving today keeps emissions high and slows your energy recovery. One active commute could start reversing this pattern within the week.",
             type: "balanced",
             correlations: {
                 health: "Sedentary commutes are linked to a 14% drop in afternoon energy stability.",
@@ -65,18 +78,6 @@ export const generateCoachInsight = (entries: DailyEntry[]): CoachInsight => {
             correlations: {
                 health: "Chronic sleep under 7h reduces cognitive energy by nearly 30% by mid-day.",
                 planet: "Tired states often lead to a 40% higher reliance on carbon-heavy transport."
-            }
-        };
-    }
-
-    // Pattern 4: High CO2 but high wellness (The "Tired Driver" trap)
-    if (latest.transport === "car" && latest.wellnessScore > 80) {
-        return {
-            text: "You are thriving today, yet your commute remains tied to high emissions; try walking or public transit on your next journey to align your personal vitality with the planet's.",
-            type: "planet",
-            correlations: {
-                health: "Your high wellness score is a powerful asset to transition to active transport.",
-                planet: "Your car usage remains the single largest contributor to your daily footprint."
             }
         };
     }
