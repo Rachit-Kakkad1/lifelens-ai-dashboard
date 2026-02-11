@@ -8,7 +8,7 @@ import {
 import {
   Zap, Leaf, Brain, ArrowUpRight,
   Bike, Car, Info, Trophy, TrendingUp,
-  AlertCircle
+  AlertCircle, Clock, Calendar, Timer
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import PageTransition from "@/components/PageTransition";
@@ -26,6 +26,12 @@ const Dashboard = () => {
   const [coachInsight, setCoachInsight] = useState<CoachInsight | null>(null);
   const [projection, setProjection] = useState<{ valid: boolean, text: string, positive: boolean }>({ valid: false, text: "", positive: false });
 
+  // Real-time Metrics
+  const [lastCheckIn, setLastCheckIn] = useState("No data yet");
+  const [journeyDay, setJourneyDay] = useState(1);
+  const [daysToReset, setDaysToReset] = useState(0);
+  const [dataCount, setDataCount] = useState(0);
+
   // Simulator State (Minimal)
   const [simTrips, setSimTrips] = useState(2);
 
@@ -40,6 +46,14 @@ const Dashboard = () => {
     { date: "2023-10-29", wellnessScore: 92, co2Emitted: 0, energy: 10, mood: 10, transport: "cycle" },
   ];
 
+  const formatLastCheckIn = (timestamp: number) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    const timeStr = date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    return isToday ? `Today, ${timeStr}` : `${date.toLocaleDateString([], { month: 'short', day: 'numeric' })}, ${timeStr}`;
+  };
+
   useEffect(() => {
     StorageService.init();
     let data = StorageService.getEntries();
@@ -51,6 +65,20 @@ const Dashboard = () => {
       setCoachInsight(insight);
       const latest = data[data.length - 1];
       setWellnessScore(latest.wellnessScore);
+      setLastCheckIn(formatLastCheckIn(latest.timestamp));
+      setDataCount(data.length);
+
+      // Journey Day Calculation
+      const firstEntry = data[0];
+      const start = new Date(firstEntry.timestamp);
+      const now = new Date();
+      const diffTime = Math.abs(now.getTime() - start.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      setJourneyDay(diffDays || 1);
+
+      // Weekly Reset Logic (Sunday)
+      const day = now.getDay();
+      setDaysToReset(day === 0 ? 0 : 7 - day);
 
       // Sustainability Logic
       const weeklyEntries = data;
@@ -100,15 +128,39 @@ const Dashboard = () => {
 
           {/* 1. HERO HEADER — Dual Intelligence */}
           <section>
+
+            {/* Real-time Status Bar */}
+            <div className="flex flex-wrap gap-3 md:gap-6 mb-6 text-[10px] md:text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
+                <Clock className="w-3.5 h-3.5 text-primary" />
+                <span>Last check-in: <span className="text-foreground ml-1">{lastCheckIn}</span></span>
+              </div>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
+                <Calendar className="w-3.5 h-3.5 text-accent" />
+                <span>Day <span className="text-foreground ml-1">{journeyDay}</span> of your journey</span>
+              </div>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
+                <Timer className="w-3.5 h-3.5 text-eco" />
+                <span>Mission resets in <span className="text-foreground ml-1">{daysToReset} days</span></span>
+              </div>
+            </div>
+
             <div className="flex flex-col gap-2 mb-8">
               <div className="flex justify-between items-end">
                 <h1 className="text-3xl font-bold text-foreground tracking-tight">Live Biometric & Climate Sync</h1>
                 <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest hidden md:block">Insights generated from your real behavior patterns</p>
               </div>
-              <p className="text-sm text-primary font-medium italic">"LifeLens learns from your daily behavior to predict your health and environmental future."</p>
+              <div>
+                <p className="text-sm text-primary font-medium italic">"LifeLens learns from your daily behavior to predict your health and environmental future."</p>
+                <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Based on your last <span className="text-foreground font-bold">{dataCount} days</span> of real behavior
+                </p>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Internal Health */}
               {/* Internal Health */}
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
@@ -159,9 +211,17 @@ const Dashboard = () => {
                   <span className={`text-xs font-bold uppercase tracking-wider ${projection.positive ? 'text-emerald-400' : 'text-amber-400'}`}>7-Day Projection</span>
                   <TrendingUp className={`w-5 h-5 ${projection.positive ? 'text-emerald-400' : 'text-amber-400'}`} />
                 </div>
-                <p className="text-sm font-semibold leading-relaxed">
+                <p className="text-sm font-semibold leading-relaxed mb-3">
                   {projection.valid ? projection.text : "Log more data to unlock projections."}
                 </p>
+                <div className="pt-3 border-t border-white/10">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                    Projection Confidence: <span className={dataCount > 5 ? "text-emerald-400" : "text-amber-400"}>{dataCount > 14 ? "High" : dataCount > 5 ? "Moderate" : "Low"}</span>
+                  </p>
+                  <p className="text-[9px] text-muted-foreground/70 mt-0.5">
+                    (based on {dataCount} days of behavioral data)
+                  </p>
+                </div>
               </motion.div>
             </div>
           </section>
@@ -318,7 +378,7 @@ const Dashboard = () => {
 
         </main>
       </PageTransition>
-    </div>
+    </div >
   );
 };
 

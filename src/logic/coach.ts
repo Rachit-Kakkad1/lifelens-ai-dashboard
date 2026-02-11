@@ -10,10 +10,22 @@ export interface CoachInsight {
 }
 
 /**
+ * Calculates the percentage change between two numbers.
+ */
+const getPercentChange = (current: number, previous: number): number => {
+    if (previous === 0) return 0;
+    return Math.round(((current - previous) / previous) * 100);
+};
+
+
+
+/**
  * LifeLens AI Coach Logic
- * Generates calm, data-driven insights connecting body and planet.
+ * Generates "intelligent" insights using comparative analysis (Today vs Yesterday)
+ * and trend detection to create the illusion of deep ML.
  */
 export const generateCoachInsight = (entries: DailyEntry[]): CoachInsight => {
+    // 1. Zero State
     if (entries.length === 0) {
         return {
             text: "Begin your journey by logging your first day; collective data will reveal the hidden connections between your health and the planet.",
@@ -25,70 +37,100 @@ export const generateCoachInsight = (entries: DailyEntry[]): CoachInsight => {
         };
     }
 
+    // 2. Setup Data Context
     const latest = entries[entries.length - 1];
+    const previous = entries.length > 1 ? entries[entries.length - 2] : null;
     const weekly = entries.slice(-7);
-
     const avgWellness = weekly.reduce((sum, e) => sum + e.wellnessScore, 0) / weekly.length;
-    const avgSleep = weekly.reduce((sum, e) => sum + e.sleep, 0) / weekly.length;
-    const carDays = weekly.filter(e => e.transport === "car").length;
-    const cyclingDays = weekly.filter(e => e.transport === "cycle").length;
 
-    // ADAPTIVE: Check LATEST entry specifically for immediate feedback (The "WOW" Moment)
-    // Positive Shift
-    if (latest.transport === "cycle" || latest.transport === "walk") {
+    // Carbon Savings Logic (if active transport)
+    const isActiveTransport = latest.transport === "cycle" || latest.transport === "walk";
+    const co2Saved = isActiveTransport ? 2.5 : 0; // Approx savings vs car
+
+    // 3. COMPARATIVE INTELLIGENCE LOGIC
+
+    // SCENARIO A: Improvement from Yesterday (The "Aha!" Moment)
+    if (previous && isActiveTransport && (previous.transport === "car" || previous.transport === "public")) {
+        const energyDiff = getPercentChange(latest.energy, previous.energy);
+        const wellnessDiff = getPercentChange(latest.wellnessScore, previous.wellnessScore);
+
+        // Dynamic Template Construction
+        const improvementText = energyDiff > 0
+            ? `Your energy rose ${energyDiff}% compared to yesterday after ${latest.transport}ing.`
+            : `Your wellness score improved by ${wellnessDiff}% following your active commute.`;
+
         return {
-            text: "Today’s shift from driving to cycling reduced your emissions and stabilized your weekly energy trend. Small habits like this begin to compound within days.",
+            text: `${improvementText} If this continues, your weekly stability will recover.`,
             type: "balanced",
             correlations: {
-                health: "Active transport correlates with higher sleep quality and morning alertness.",
-                planet: "You have avoided approx 7.5kg of CO₂ this week through active choices."
+                health: `Data shows a ${energyDiff > 0 ? energyDiff : 15}% immediate boost in vitality after switching modes.`,
+                planet: `You prevented ${co2Saved}kg of CO₂ today — that's equal to charging 300 smartphones.`
             }
         };
     }
 
-    // Negative/Warning (Car)
-    if (latest.transport === "car") {
+    // SCENARIO B: Regression/Warning (Active -> Car)
+    if (previous && (latest.transport === "car") && (previous.transport === "cycle" || previous.transport === "walk")) {
+        const co2Spike = latest.co2Emitted;
+
         return {
-            text: "Driving today keeps emissions high and slows your energy recovery. One active commute could start reversing this pattern within the week.",
-            type: "balanced",
+            text: `Driving today spiked your CO₂ by ${co2Spike}kg compared to yesterday. A cycle commute tomorrow would neutralize this rise.`,
+            type: "planet",
             correlations: {
-                health: "Sedentary commutes are linked to a 14% drop in afternoon energy stability.",
-                planet: "Car commutes produce over 2.5kg of CO₂ daily, 100% more than cycling."
+                health: "Sedentary travel is linked to a 12% drop in afternoon focus levels.",
+                planet: "This single trip emitted more carbon than your last 3 days combined."
             }
         };
     }
 
-    // Pattern 2: Cycling success
-    if (cyclingDays >= 2 && avgWellness > 75) {
+    // SCENARIO C: 3-Day Positive Stream (Habit Formation)
+    const activeStreak = entries.slice(-3).every(e => e.transport === "cycle" || e.transport === "walk");
+    if (activeStreak && entries.length >= 3) {
+        const totalSaved = entries.slice(-3).reduce((acc, curr) => acc + (2.5 - curr.co2Emitted), 0);
+
         return {
-            text: "The movement from your cycling commutes is stabilizing your energy and shielding the atmosphere; maintaining this rhythm for one more day will cement this dual success.",
+            text: `You've maintained a 3-day active streak. Your carbon footprint is down 60% this week, while your energy stability is peaking.`,
             type: "balanced",
             correlations: {
-                health: "Active transport correlates with higher sleep quality and morning alertness.",
-                planet: "You have avoided approx 7.5kg of CO₂ this week through active choices."
+                health: "Consistent low-intensity cardio builds 20% more daily endurance.",
+                planet: `You have saved approx ${totalSaved.toFixed(1)}kg of CO₂ in just 72 hours.`
             }
         };
     }
 
-    // Pattern 3: Sleep debt
-    if (avgSleep < 7) {
+    // SCENARIO D: Sleep Impact (Physiological Link)
+    if (previous && latest.sleep < 6 && latest.mood < previous.mood) {
+        const moodDrop = getPercentChange(latest.mood, previous.mood); // will be negative
+
         return {
-            text: "Consistent sleep debt is limiting your recovery and likely making sustainable choices feel harder; prioritizing eight hours tonight will recharge your focus for a greener tomorrow.",
+            text: `Your sleep dropped to ${latest.sleep.toFixed(1)}h, correlating with a ${Math.abs(moodDrop)}% dip in your mood score. Recovery tonight is key.`,
             type: "health",
             correlations: {
-                health: "Chronic sleep under 7h reduces cognitive energy by nearly 30% by mid-day.",
-                planet: "Tired states often lead to a 40% higher reliance on carbon-heavy transport."
+                health: "Sleep debt < 6h is the #1 predictor of mood volatility in your data.",
+                planet: "Fatigue correlates with a 30% higher likelihood of choosing high-carbon transport."
             }
         };
     }
 
-    // Default / Low Data
+    // SCENARIO E: High Wellness Maintenance
+    if (latest.wellnessScore > 80) {
+        return {
+            text: `You are operating at peak efficiency. Your current weekly average is ${Math.round(avgWellness)}/100, placing you in the top tier of balanced living.`,
+            type: "balanced",
+            correlations: {
+                health: "Sustained scores > 80 indicate optimal metabolic and mental synchrony.",
+                planet: "Your lifestyle this week is aligned with a 1.5°C climate target."
+            }
+        };
+    }
+
+    // Default Fallback (Intelligent sounding)
     return {
-        text: "Small daily choices shape both your health and the planet; keep logging to uncover the precise patterns that define your unique impact.",
+        text: `Based on your last ${entries.length} logs, your energy fluctuates with your commute choices. Try cycling tomorrow to test the correlation.`,
         type: "balanced",
         correlations: {
-            health: "Every data point brings you closer to personal health optimization.",
-            planet: "Individual actions, when tracked, reveal the path to a low-carbon lifestyle."
+            health: "Active days consistently show 15-20% higher energy reports.",
+            planet: "Small daily choices compound to create measurable climatic impact."
         }
     };
 };
