@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'framer-motion'
-import { BarChart3, Activity, Lightbulb, SlidersHorizontal, Target, User, X, Menu } from 'lucide-react'
+import { BarChart3, Activity, Lightbulb, SlidersHorizontal, Target, User, X, Menu, Users, MapPin } from 'lucide-react'
 import { cn } from '../lib/utils'
 
 const navItems = [
@@ -10,6 +10,8 @@ const navItems = [
   { path: '/insights', label: 'Insights', icon: Lightbulb },
   { path: '/simulator', label: 'Simulator', icon: SlidersHorizontal },
   { path: '/mission', label: 'Mission', icon: Target },
+  { path: '/community', label: 'Community', icon: Users },
+  { path: '/travel', label: 'Travel', icon: MapPin },
 ]
 
 export default function Navbar() {

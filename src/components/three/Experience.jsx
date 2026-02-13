@@ -43,7 +43,7 @@ export default function Experience() {
       >
         <Suspense fallback={null}>
           <Hero3D />
-          <Effects />
+          {/* <Effects /> */}
           <Preload all />
         </Suspense>
       </Canvas>

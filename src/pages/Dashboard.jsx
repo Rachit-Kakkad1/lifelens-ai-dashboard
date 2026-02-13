@@ -1,16 +1,19 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts'
 import {
-  Zap, Leaf, TrendingUp, Brain, Clock, Calendar, Target, ArrowUpRight
+  Zap, Leaf, TrendingUp, Brain, Clock, Calendar, Target, ArrowUpRight,
+  Sparkles, Bike, Bus, CheckCircle2, Moon
 } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import { StorageService } from '@/services/storage'
 import { calculateSustainabilityScore } from '@/logic/wellness'
 import { generateCoachInsight } from '@/logic/coach'
-import { useRef } from 'react'
+import { generatePredictiveInsight } from '@/logic/aiPredictor'
+import { generateWeeklyPlan } from '@/logic/weeklyPlan'
+import { getAIPrediction, getAIWeeklyPlan, parseAIWeeklyPlan, checkAIStatus } from '@/services/ai'
 
 const ease = [0.16, 1, 0.3, 1]
 
@@ -68,6 +71,10 @@ export default function Dashboard() {
   const [lastCheckIn, setLastCheckIn] = useState('No data')
   const [journeyDay, setJourneyDay] = useState(1)
   const [dataCount, setDataCount] = useState(0)
+  const [aiPrediction, setAiPrediction] = useState(null)
+  const [weeklyPlan, setWeeklyPlan] = useState(null)
+  const [aiText, setAiText] = useState(null)
+  const [aiStatus, setAiStatus] = useState('checking') // 'checking' | 'online' | 'offline'
   const chartRef = useRef(null)
   const chartInView = useInView(chartRef, { once: true, margin: '-50px' })
 
@@ -93,6 +100,27 @@ export default function Dashboard() {
     const sumCo2 = data.reduce((s, e) => s + e.co2Emitted, 0)
     setSustainScore(calculateSustainabilityScore(sumCo2))
     setInsight(generateCoachInsight(data))
+    setAiPrediction(generatePredictiveInsight(data))
+    setWeeklyPlan(generateWeeklyPlan(data))
+
+      // Async: Try LM Studio AI enhancement
+      ; (async () => {
+        const status = await checkAIStatus()
+        if (status.online) {
+          setAiStatus('online')
+          // Get AI prediction text
+          const predText = await getAIPrediction(data)
+          if (predText) setAiText(predText)
+          // Get AI weekly plan
+          const planText = await getAIWeeklyPlan(data)
+          if (planText) {
+            const parsed = parseAIWeeklyPlan(planText)
+            if (parsed && parsed.actions.length > 0) setWeeklyPlan(parsed)
+          }
+        } else {
+          setAiStatus('offline')
+        }
+      })()
 
     const last3 = data.slice(-3)
     const recentActive = last3.filter(e => e.transport === 'cycle' || e.transport === 'walk').length
@@ -187,14 +215,12 @@ export default function Dashboard() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ delay: 0.35, duration: 0.7, ease }}
             whileHover={{ y: -4, scale: 1.01, transition: { duration: 0.3 } }}
-            className={`p-7 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] border-l-[3px] flex flex-col justify-center ${
-              projection.positive ? 'border-l-[var(--color-eco)]' : 'border-l-[var(--color-warn)]'
-            }`}
+            className={`p-7 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] border-l-[3px] flex flex-col justify-center ${projection.positive ? 'border-l-[var(--color-eco)]' : 'border-l-[var(--color-warn)]'
+              }`}
           >
             <div className="flex items-center justify-between mb-3">
-              <span className={`text-xs font-semibold tracking-[0.12em] uppercase ${
-                projection.positive ? 'text-[var(--color-eco)]' : 'text-[var(--color-warn)]'
-              }`}>7-Day Projection</span>
+              <span className={`text-xs font-semibold tracking-[0.12em] uppercase ${projection.positive ? 'text-[var(--color-eco)]' : 'text-[var(--color-warn)]'
+                }`}>7-Day Projection</span>
               <TrendingUp size={18} className={projection.positive ? 'text-[var(--color-eco)]' : 'text-[var(--color-warn)]'} />
             </div>
             <p className="text-sm font-medium leading-relaxed mb-3">
@@ -209,6 +235,148 @@ export default function Dashboard() {
             </div>
           </motion.div>
         </div>
+
+        {/* -- Predictive AI Insight Card -- */}
+        {aiPrediction && (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.8, ease }}
+            className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[var(--color-surface)] to-[var(--color-elevated)] border border-[var(--color-border)] hover:border-[var(--color-accent)]/30 transition-all duration-500 group"
+            style={{ boxShadow: '0 0 60px -20px rgba(45,212,191,0.15)' }}
+          >
+            {/* Animated glow background */}
+            <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-[var(--color-accent)]/5 blur-3xl group-hover:bg-[var(--color-accent)]/10 transition-all duration-700" />
+            <div className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full bg-[var(--color-eco)]/5 blur-3xl" />
+
+            <div className="relative z-10 p-6 sm:p-8">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-10 h-10 rounded-xl bg-[var(--color-accent)]/10 flex items-center justify-center">
+                  <Sparkles size={20} className="text-[var(--color-accent)]" />
+                </div>
+                <div>
+                  <h2 className="font-display text-lg font-bold">Predictive AI Insight</h2>
+                  <p className="text-[11px] text-[var(--color-text-muted)] uppercase tracking-wider font-semibold flex items-center gap-2">
+                    {aiStatus === 'online' ? (
+                      <><span className="inline-block w-1.5 h-1.5 rounded-full bg-[var(--color-eco)] animate-pulse" /> LM Studio AI — Live</>
+                    ) : aiStatus === 'checking' ? (
+                      <><span className="inline-block w-1.5 h-1.5 rounded-full bg-[var(--color-warn)] animate-pulse" /> Connecting to AI...</>
+                    ) : (
+                      <><span className="inline-block w-1.5 h-1.5 rounded-full bg-[var(--color-accent)]" /> Neural Engine Active</>
+                    )}
+                  </p>
+                </div>
+                <span className={`ml-auto px-3 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider border ${aiPrediction.confidence === 'High'
+                  ? 'bg-[var(--color-eco)]/10 text-[var(--color-eco)] border-[var(--color-eco)]/20'
+                  : aiPrediction.confidence === 'Moderate'
+                    ? 'bg-[var(--color-accent)]/10 text-[var(--color-accent)] border-[var(--color-accent)]/20'
+                    : 'bg-[var(--color-warn)]/10 text-[var(--color-warn)] border-[var(--color-warn)]/20'
+                  }`}>
+                  {aiPrediction.confidence} confidence
+                </span>
+              </div>
+
+              {/* Main prediction text */}
+              {aiText ? (
+                <p className="font-display text-lg sm:text-xl font-medium leading-relaxed text-[var(--color-text)]/90 mb-6 italic">
+                  &ldquo;{aiText}&rdquo;
+                </p>
+              ) : (
+                <p className="font-display text-xl sm:text-2xl font-medium leading-relaxed text-[var(--color-text)]/90 mb-6">
+                  🎯 {aiPrediction.opportunity}
+                </p>
+              )}
+
+              {/* Stats row */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <motion.div
+                  whileHover={{ y: -2, transition: { duration: 0.25 } }}
+                  className="p-5 rounded-xl bg-[var(--color-bg)]/60 backdrop-blur-sm border border-[var(--color-border)] hover:border-[var(--color-eco)]/30 transition-all duration-300"
+                >
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--color-eco)] mb-2">Monthly CO₂ Savings</p>
+                  <div className="flex items-end gap-1">
+                    <span className="font-display text-4xl font-bold text-[var(--color-eco)]">{aiPrediction.monthlySavings}</span>
+                    <span className="text-sm text-[var(--color-text-muted)] mb-1.5 font-medium">kg</span>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  whileHover={{ y: -2, transition: { duration: 0.25 } }}
+                  className="p-5 rounded-xl bg-[var(--color-bg)]/60 backdrop-blur-sm border border-[var(--color-border)] hover:border-[var(--color-accent)]/30 transition-all duration-300"
+                >
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--color-accent)] mb-2">Reduction Potential</p>
+                  <div className="flex items-end gap-1">
+                    <span className="font-display text-4xl font-bold text-[var(--color-accent)]">{aiPrediction.reductionPct}</span>
+                    <span className="text-sm text-[var(--color-text-muted)] mb-1.5 font-medium">%</span>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  whileHover={{ y: -2, transition: { duration: 0.25 } }}
+                  className="p-5 rounded-xl bg-[var(--color-bg)]/60 backdrop-blur-sm border border-[var(--color-border)] hover:border-[var(--color-brand)]/30 transition-all duration-300"
+                >
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--color-brand)] mb-2">Time to Sustainable</p>
+                  <span className="font-display text-2xl font-bold text-[var(--color-brand)]">{aiPrediction.timeToTarget}</span>
+                </motion.div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* -- Weekly Action Plan Card -- */}
+        {weeklyPlan && weeklyPlan.actions.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 25 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.7, ease }}
+            whileHover={{ y: -3, transition: { duration: 0.3 } }}
+            className="rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] border-l-[3px] border-l-[var(--color-eco)] p-6 sm:p-8 hover:border-[var(--color-border-hover)] transition-all duration-300 relative overflow-hidden"
+            style={{ boxShadow: '0 0 40px -15px var(--color-eco)' }}
+          >
+            <div className="absolute top-0 right-0 opacity-[0.03]">
+              <Leaf size={140} />
+            </div>
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 mb-5">
+                <Brain size={18} className="text-[var(--color-eco)]" />
+                <h3 className="font-display font-bold">Your AI Action Plan This Week</h3>
+              </div>
+              <div className="space-y-3 mb-5">
+                {weeklyPlan.actions.map((action, i) => {
+                  const IconMap = { bike: Bike, bus: Bus, moon: Moon, zap: Zap, check: CheckCircle2, clipboard: Target }
+                  const ActionIcon = IconMap[action.icon] || CheckCircle2
+                  return (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.6 + i * 0.1, duration: 0.5, ease }}
+                      className="flex items-center gap-3 p-3 rounded-xl bg-[var(--color-bg)] border border-[var(--color-border)] hover:border-[var(--color-eco)]/30 transition-all duration-300"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-[var(--color-eco)]/10 flex items-center justify-center shrink-0">
+                        <ActionIcon size={14} className="text-[var(--color-eco)]" />
+                      </div>
+                      <span className="text-sm font-medium text-[var(--color-text-secondary)] flex-1">{action.text}</span>
+                      {action.savings > 0 && (
+                        <span className="text-xs font-bold text-[var(--color-eco)] px-2 py-1 rounded-md bg-[var(--color-eco)]/8 shrink-0">
+                          −{action.savings} kg
+                        </span>
+                      )}
+                    </motion.div>
+                  )
+                })}
+              </div>
+              {weeklyPlan.totalPotential > 0 && (
+                <div className="flex items-center gap-2 pt-4 border-t border-[var(--color-border)]">
+                  <TrendingUp size={14} className="text-[var(--color-eco)]" />
+                  <span className="text-sm font-semibold">
+                    Total potential: <span className="text-[var(--color-eco)]">{weeklyPlan.totalPotential} kg CO₂</span> saved this week
+                  </span>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
 
         {/* -- Timeline Chart -- */}
         <motion.div

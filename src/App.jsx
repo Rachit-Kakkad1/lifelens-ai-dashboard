@@ -12,6 +12,8 @@ const Insights = lazy(() => import('./pages/Insights'))
 const Simulator = lazy(() => import('./pages/Simulator'))
 const Mission = lazy(() => import('./pages/Mission'))
 const Profile = lazy(() => import('./pages/Profile'))
+const Community = lazy(() => import('./pages/Community'))
+const Travel = lazy(() => import('./pages/Travel'))
 
 function Loader() {
   return (
@@ -33,6 +35,8 @@ function AnimatedRoutes() {
         <Route path="/simulator" element={<PageTransition><Simulator /></PageTransition>} />
         <Route path="/mission" element={<PageTransition><Mission /></PageTransition>} />
         <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
+        <Route path="/community" element={<PageTransition><Community /></PageTransition>} />
+        <Route path="/travel" element={<PageTransition><Travel /></PageTransition>} />
       </Routes>
     </AnimatePresence>
   )
