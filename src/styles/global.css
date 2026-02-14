@@ -448,6 +448,202 @@
 }
 
 /* Utilities */
+/* ============================
+   Cinematic Climate HUD Utilities
+   ============================ */
+.mesh-gradient-animate {
+  background: radial-gradient(at 0% 0%, rgba(45, 212, 191, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(129, 140, 248, 0.1) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(248, 113, 113, 0.05) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(56, 189, 248, 0.1) 0px, transparent 50%);
+  background-size: 200% 200%;
+  animation: mesh-flow 15s ease-in-out infinite alternate;
+}
+
+@keyframes mesh-flow {
+  0% {
+    background-position: 0% 0%;
+  }
+
+  100% {
+    background-position: 100% 100%;
+  }
+}
+
+.glass-glow-critical {
+  box-shadow: 0 0 40px -10px rgba(248, 113, 113, 0.3);
+  border-color: rgba(248, 113, 113, 0.2);
+}
+
+.glass-glow-optimized {
+  box-shadow: 0 0 40px -10px rgba(74, 222, 128, 0.3);
+  border-color: rgba(74, 222, 128, 0.2);
+}
+
+/* ============================
+   God-Level Graph Utilities
+   ============================ */
+.chart-scanline {
+  background: repeating-linear-gradient(0deg,
+      transparent,
+      transparent 1px,
+      rgba(255, 255, 255, 0.02) 1px,
+      rgba(255, 255, 255, 0.02) 2px);
+  pointer-events: none;
+}
+
+.glass-hud {
+  background: rgba(10, 10, 15, 0.85);
+  backdrop-filter: blur(24px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.02);
+}
+
+.active-dot-pulse {
+  animation: dot-breathing 2s ease-in-out infinite;
+}
+
+/* ============================
+   Graph v2.0: Biometric High-Fi
+   =========================== */
+.neural-ripple {
+  position: absolute;
+  border-radius: 50%;
+  animation: ripple-out 1.2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  pointer-events: none;
+}
+
+@keyframes ripple-out {
+  0% {
+    transform: scale(0.5);
+    opacity: 0.8;
+  }
+
+  100% {
+    transform: scale(3.5);
+    opacity: 0;
+  }
+}
+
+.laser-scan {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, transparent, var(--color-brand), transparent);
+  box-shadow: 0 0 15px var(--color-brand);
+  pointer-events: none;
+  z-index: 5;
+}
+
+.series-highlight {
+  filter: drop-shadow(0 0 8px currentColor) brightness(1.2);
+  transition: all 0.4s ease;
+}
+
+.text-glitch {
+  display: inline-block;
+  animation: glitch-subtle 3s step-end infinite;
+}
+
+@keyframes glitch-subtle {
+
+  0%,
+  90% {
+    transform: translate(0);
+  }
+
+  92% {
+    transform: translate(1px, 1px);
+  }
+
+  94% {
+    transform: translate(-1px, -1px);
+  }
+
+  96% {
+    transform: translate(1px, -1px);
+  }
+
+  100% {
+    transform: translate(0);
+  }
+}
+
+/* ============================
+   Radial Breakdown HUD
+   ============================ */
+.segment-reveal {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: svg-dash-reveal 2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes svg-dash-reveal {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.pulse-ring {
+  animation: pulse-ring-glow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-ring-glow {
+
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.4;
+    transform: scale(1.05);
+  }
+}
+
+/* ============================
+   Resilience Bar HUD
+   ============================ */
+.bar-glow-adaptive {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  filter: drop-shadow(0 0 10px currentColor);
+}
+
+.bar-glow-adaptive:hover {
+  filter: drop-shadow(0 0 20px currentColor) brightness(1.2);
+}
+
+.vertical-grow {
+  transform-origin: bottom;
+  animation: bar-grow-up 1.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes bar-grow-up {
+  from {
+    transform: scaleY(0);
+  }
+
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes dot-breathing {
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+
+  50% {
+    transform: scale(1.5);
+    opacity: 1;
+  }
+}
+
 .perspective-1000 {
   perspective: 1000px;
 }

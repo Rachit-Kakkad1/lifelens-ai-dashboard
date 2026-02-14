@@ -1,12 +1,22 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from 'recharts'
-import { Target, Zap, Leaf, Bike, Trophy, ArrowUpRight } from 'lucide-react'
+import { Target, Zap, Leaf, Bike, Trophy, ArrowUpRight, LogOut, Coffee, Brain, Utensils, Droplets, Moon } from 'lucide-react'
 import clsx from 'clsx'
 import Navbar from '@/components/Navbar'
 import { StorageService } from '@/services/storage'
 import { INITIAL_MISSION } from '@/logic/mission'
-import { weeklyMission } from '@/data/mockData'
+import { MISSIONS } from '@/data/missions'
+
+const missionIcons = {
+  'cycle-commute': Bike,
+  'plant-based': Leaf,
+  'hydration-sync': Droplets,
+  'sleep-hygiene': Moon,
+  'caffeine-cut': Coffee,
+  'mindful-minutes': Brain,
+  'local-harvest': Utensils
+}
 
 const ease = [0.16, 1, 0.3, 1]
 
@@ -27,6 +37,34 @@ function ChartTooltip({ active, payload, label }) {
 export default function Mission() {
   const [mission, setMission] = useState(INITIAL_MISSION)
   const [tab, setTab] = useState('overview')
+  const [exited, setExited] = useState(false)
+
+  const handleExitMission = () => {
+    if (!window.confirm('Are you sure you want to exit your active mission? This will reset your biometric progress.')) return
+
+    const freshMission = {
+      ...INITIAL_MISSION,
+      id: null,
+      weekStartTimestamp: Date.now()
+    }
+    setMission(freshMission)
+    StorageService.saveMissionState(freshMission)
+    setExited(true)
+    setTimeout(() => setExited(false), 3000)
+  }
+
+  const handleSelectMission = (m) => {
+    const newMission = {
+      ...m,
+      currentCount: 0,
+      completed: false,
+      totalEnergyGained: 0,
+      totalCo2Saved: 0,
+      weekStartTimestamp: Date.now()
+    }
+    setMission(newMission)
+    StorageService.saveMissionState(newMission)
+  }
 
   useEffect(() => {
     StorageService.init()
@@ -49,45 +87,122 @@ export default function Mission() {
         >
           <div>
             <p className="text-xs font-semibold tracking-[0.15em] uppercase text-[var(--color-text-muted)] mb-2">
-              Weekly Challenge
+              Behavioral Intelligence
             </p>
             <h1 className="font-display text-3xl font-bold tracking-tight">Mission Control</h1>
           </div>
-          <div className="text-right">
-            <p className={clsx(
-              'font-display text-xl font-bold',
-              mission.completed ? 'text-[var(--color-accent)]' : 'text-[var(--color-brand)]'
-            )}>
-              {mission.completed ? 'COMPLETED' : 'IN PROGRESS'}
-            </p>
-          </div>
+          {mission.id && (
+            <div className="flex flex-col items-end gap-2">
+              <p className={clsx(
+                'font-display text-xl font-bold',
+                mission.completed ? 'text-[var(--color-accent)]' : 'text-[var(--color-brand)]'
+              )}>
+                {mission.completed ? 'COMPLETED' : 'IN PROGRESS'}
+              </p>
+              {!mission.completed && (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleExitMission}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 text-red-500 text-[10px] font-bold uppercase tracking-wider border border-red-500/20 hover:bg-red-500/20 transition-all duration-200"
+                >
+                  <LogOut size={12} />
+                  Exit Mission
+                </motion.button>
+              )}
+            </div>
+          )}
         </motion.div>
 
-        {/* -- Tab Switcher -- */}
-        <div className="flex gap-2 mb-8">
-          {['overview', 'tracker'].map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={clsx(
-                'relative px-5 py-2.5 rounded-xl text-sm font-medium transition-colors duration-200 focus-ring capitalize',
-                tab === t ? 'text-[var(--color-text)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]'
-              )}
+        <AnimatePresence>
+          {exited && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mb-6 overflow-hidden"
             >
-              {tab === t && (
-                <motion.div
-                  layoutId="mission-tab"
-                  className="absolute inset-0 rounded-xl bg-[var(--color-elevated)] border border-[var(--color-border-hover)]"
-                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                />
-              )}
-              <span className="relative z-10">{t}</span>
-            </button>
-          ))}
-        </div>
+              <div className="flex items-center gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-sm font-medium">
+                <LogOut size={16} />
+                Mission reset successful. System returning to base trajectory.
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* -- Tab Switcher -- */}
+        {mission.id && (
+          <div className="flex gap-2 mb-8">
+            {['overview', 'tracker'].map((t) => (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                className={clsx(
+                  'relative px-5 py-2.5 rounded-xl text-sm font-medium transition-colors duration-200 focus-ring capitalize',
+                  tab === t ? 'text-[var(--color-text)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]'
+                )}
+              >
+                {tab === t && (
+                  <motion.div
+                    layoutId="mission-tab"
+                    className="absolute inset-0 rounded-xl bg-[var(--color-elevated)] border border-[var(--color-border-hover)]"
+                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                  />
+                )}
+                <span className="relative z-10">{t}</span>
+              </button>
+            ))}
+          </div>
+        )}
 
         <AnimatePresence mode="wait">
-          {tab === 'overview' ? (
+          {!mission.id ? (
+            <motion.div
+              key="marketplace"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="space-y-8"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {MISSIONS.map((m, i) => {
+                  const Icon = m.icon
+                  return (
+                    <motion.div
+                      key={m.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.05 }}
+                      whileHover={{ y: -5 }}
+                      className="rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] p-6 hover:border-[var(--color-border-hover)] transition-all group cursor-pointer relative overflow-hidden"
+                      onClick={() => handleSelectMission(m)}
+                    >
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-xl bg-[var(--color-brand)]/10 flex items-center justify-center text-[var(--color-brand)]" style={{ color: m.color }}>
+                          <Icon size={20} />
+                        </div>
+                        <h3 className="font-display font-bold text-lg">{m.title}</h3>
+                      </div>
+                      <p className="text-sm text-[var(--color-text-secondary)] mb-6 leading-relaxed line-clamp-2">
+                        {m.description}
+                      </p>
+                      <div className="flex justify-between items-center text-[11px] font-bold uppercase tracking-wider">
+                        <div className="flex items-center gap-1.5 text-[var(--color-health)]">
+                          <Zap size={12} /> {m.energyBoost}
+                        </div>
+                        <div className="flex items-center gap-1.5 text-[var(--color-eco)]">
+                          <Leaf size={12} /> {m.co2Reduction}
+                        </div>
+                      </div>
+                      <div className="absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <ArrowUpRight size={16} className="text-[var(--color-text-muted)]" />
+                      </div>
+                    </motion.div>
+                  )
+                })}
+              </div>
+            </motion.div>
+          ) : tab === 'overview' ? (
             <motion.div
               key="overview"
               initial={{ opacity: 0, y: 10 }}
@@ -103,14 +218,14 @@ export default function Mission() {
                     <Target size={20} />
                   </div>
                   <div>
-                    <h2 className="font-display text-xl font-bold">{weeklyMission.title}</h2>
-                    <p className="text-xs text-[var(--color-text-secondary)]">{weeklyMission.description}</p>
+                    <h2 className="font-display text-xl font-bold">{mission.title}</h2>
+                    <p className="text-xs text-[var(--color-text-secondary)]">{mission.description}</p>
                   </div>
                 </div>
 
                 <div className="h-[220px] mb-6">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={weeklyMission.missionData}>
+                    <LineChart data={mission.missionData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
                       <XAxis
                         dataKey="day" stroke="var(--color-text-muted)" fontSize={12}
@@ -136,14 +251,14 @@ export default function Mission() {
                   <div className="flex items-center gap-3 p-4 rounded-xl bg-[var(--color-health)]/5 border border-[var(--color-health)]/15">
                     <Zap size={18} className="text-[var(--color-health)]" />
                     <div>
-                      <p className="font-display text-lg font-bold text-[var(--color-health)]">{weeklyMission.energyBoost}</p>
+                      <p className="font-display text-lg font-bold text-[var(--color-health)]">{mission.energyBoost}</p>
                       <p className="text-[11px] text-[var(--color-text-muted)]">weekly energy</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-4 rounded-xl bg-[var(--color-eco)]/5 border border-[var(--color-eco)]/15">
                     <Leaf size={18} className="text-[var(--color-eco)]" />
                     <div>
-                      <p className="font-display text-lg font-bold text-[var(--color-eco)]">{weeklyMission.co2Reduction}</p>
+                      <p className="font-display text-lg font-bold text-[var(--color-eco)]">{mission.co2Reduction}</p>
                       <p className="text-[11px] text-[var(--color-text-muted)]">CO2 saved</p>
                     </div>
                   </div>
@@ -175,7 +290,13 @@ export default function Mission() {
                     'p-4 rounded-2xl',
                     mission.completed ? 'bg-[var(--color-accent)]/10 text-[var(--color-accent)]' : 'bg-[var(--color-brand)]/10 text-[var(--color-brand)]'
                   )}>
-                    <Bike size={36} />
+                    {mission.id === 'cycle-commute' && <Bike size={36} />}
+                    {mission.id === 'plant-based' && <Leaf size={36} />}
+                    {mission.id === 'hydration-sync' && <Droplets size={36} />}
+                    {mission.id === 'sleep-hygiene' && <Moon size={36} />}
+                    {mission.id === 'caffeine-cut' && <Coffee size={36} />}
+                    {mission.id === 'mindful-minutes' && <Brain size={36} />}
+                    {mission.id === 'local-harvest' && <Utensils size={36} />}
                   </div>
                   <div className="text-center sm:text-left flex-1">
                     <span className={clsx(
@@ -187,10 +308,10 @@ export default function Mission() {
                     <h2 className="font-display text-3xl font-bold mb-3">{mission.title}</h2>
                     <div className="flex flex-wrap justify-center sm:justify-start gap-3">
                       <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--color-bg)] border border-[var(--color-border)] text-xs font-semibold">
-                        <Zap size={12} className="text-[var(--color-health)]" /> +18% Energy
+                        <Zap size={12} className="text-[var(--color-health)]" /> {mission.energyBoost} Energy
                       </span>
-                      <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--color-bg)] border border-[var(--color-border)] text-xs font-semibold">
-                        <Leaf size={12} className="text-[var(--color-eco)]" /> -5.2kg CO2
+                      <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--color-bg)] border border(--color-border)] text-xs font-semibold">
+                        <Leaf size={12} className="text-[var(--color-eco)]" /> {mission.co2Reduction} CO2
                       </span>
                     </div>
                   </div>
