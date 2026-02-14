@@ -8,6 +8,13 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    proxy: {
+      "/ors": {
+        target: "https://api.openrouteservice.org",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/ors/, ""),
+      },
+    },
     hmr: {
       overlay: false,
     },

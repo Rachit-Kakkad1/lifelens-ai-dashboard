@@ -1,9 +1,11 @@
-import { motion } from 'framer-motion'
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { BarChart, Bar, ResponsiveContainer, XAxis, Tooltip } from 'recharts'
-import { Activity, Leaf, TrendingUp, ArrowUpRight } from 'lucide-react'
+import { Activity, Leaf, TrendingUp, ArrowUpRight, X, Brain, Sparkles, Zap } from 'lucide-react'
 import clsx from 'clsx'
 import Navbar from '@/components/Navbar'
 import { insightCards, sleepCorrelation } from '@/data/mockData'
+import { getDeepWellnessInsight } from '@/services/llmWellnessAdvisor'
 
 const ease = [0.16, 1, 0.3, 1]
 
@@ -112,7 +114,113 @@ function ChartTooltip({ active, payload, label }) {
   )
 }
 
+function AIInsightModal({ isOpen, onClose }) {
+  const [insight, setInsight] = useState(null)
+  const [loading, setLoading] = useState(false)
+
+  const handleGenerate = async () => {
+    setLoading(true)
+    const text = await getDeepWellnessInsight("Sleep vs. Cognitive Efficiency")
+    setInsight(text)
+    setLoading(false)
+  }
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="absolute inset-0 bg-[var(--color-bg)]/80 backdrop-blur-xl"
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            className="relative w-full max-w-2xl glass-premium rounded-3xl border border-[var(--color-border)] shadow-2xl overflow-hidden"
+          >
+            <div className="p-8 space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-[var(--color-brand)]/10 flex items-center justify-center">
+                    <Brain size={20} className="text-[var(--color-brand)]" />
+                  </div>
+                  <div>
+                    <h2 className="font-display text-xl font-bold">Neuro-Correlation Deep Dive</h2>
+                    <p className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-widest font-bold">Advanced Behavioral Analysis</p>
+                  </div>
+                </div>
+                <button onClick={onClose} className="p-2 hover:bg-[var(--color-elevated)] rounded-full transition-colors">
+                  <X size={20} className="text-[var(--color-text-muted)]" />
+                </button>
+              </div>
+
+              <div className="bg-[var(--color-bg)]/40 rounded-2xl p-6 border border-[var(--color-border)] min-h-[200px] flex flex-col">
+                {insight ? (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="prose prose-invert prose-sm max-w-none text-[var(--color-text-secondary)]"
+                  >
+                    <div className="whitespace-pre-wrap leading-relaxed">
+                      {insight}
+                    </div>
+                  </motion.div>
+                ) : (
+                  <div className="flex-1 flex flex-col items-center justify-center text-center space-y-4">
+                    <div className="w-12 h-12 rounded-full border-2 border-[var(--color-brand)]/20 flex items-center justify-center">
+                      <Sparkles size={24} className="text-[var(--color-brand)]/40" />
+                    </div>
+                    <p className="text-sm text-[var(--color-text-muted)] max-w-xs">
+                      Click below to trigger the Neural Engine and analyze your sleep-efficiency patterns.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-4">
+                {!insight ? (
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleGenerate}
+                    disabled={loading}
+                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-[var(--color-brand)] text-white font-bold shadow-lg shadow-[var(--color-brand)]/20 transition-all hover:brightness-110 disabled:opacity-50"
+                  >
+                    {loading ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent animate-spin rounded-full" />
+                        Running Analysis...
+                      </>
+                    ) : (
+                      <>
+                        <Zap size={18} /> Run AI Neuro-Analysis
+                      </>
+                    )}
+                  </motion.button>
+                ) : (
+                  <button
+                    onClick={onClose}
+                    className="flex-1 px-6 py-3 rounded-2xl bg-[var(--color-elevated)] text-[var(--color-text)] font-semibold border border-[var(--color-border)] hover:bg-[var(--color-border)] transition-all"
+                  >
+                    Close Report
+                  </button>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  )
+}
+
 export default function Insights() {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
   return (
     <div className="min-h-screen bg-[var(--color-bg)]">
       <Navbar />
@@ -184,12 +292,15 @@ export default function Insights() {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
+              onClick={() => setIsModalOpen(true)}
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--color-brand)]/10 text-[var(--color-brand)] text-sm font-semibold border border-[var(--color-brand)]/20 hover:bg-[var(--color-brand)]/20 transition-colors duration-300 focus-ring"
             >
               Explore Analysis <ArrowUpRight size={14} />
             </motion.button>
           </div>
         </motion.div>
+
+        <AIInsightModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
       </main>
     </div>
   )
