@@ -16,18 +16,23 @@ function seed() {
 
   const DAY = 864e5
   const now = Date.now()
-  const entries = Array.from({ length: 6 }, (_, i) => {
-    const d = new Date(now - (6 - i) * DAY)
+  const entries = Array.from({ length: 14 }, (_, i) => {
+    const d = new Date(now - (14 - i) * DAY)
+    // Behavioral pattern: Starting car-heavy, moving to active/transit (transformation story)
+    const modes = ['car', 'car', 'car', 'public', 'car', 'car', 'public', 'car', 'public', 'cycle', 'car', 'cycle', 'public', 'cycle']
+    const mode = modes[i] || 'public'
+    const co2 = mode === 'car' ? 2.5 : mode === 'public' ? 0.5 : 0
+
     return {
       id: `seed-${i}`,
       date: d.toISOString().split('T')[0],
       timestamp: d.getTime(),
-      sleep: 6 + Math.random(),
-      energy: 5 + Math.random() * 2,
-      mood: 5 + Math.random() * 2,
-      transport: i % 2 === 0 ? 'car' : 'public',
-      wellnessScore: 65 + i * 2,
-      co2Emitted: i % 2 === 0 ? 2.5 : 0.5,
+      sleep: 6.5 + (i * 0.1),
+      energy: 5 + (i * 0.2) + Math.random(),
+      mood: 6 + (i * 0.1) + Math.random(),
+      transport: mode,
+      wellnessScore: 60 + (i * 2),
+      co2Emitted: co2,
     }
   })
 

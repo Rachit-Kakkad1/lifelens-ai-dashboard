@@ -1,13 +1,15 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { MapPin, Bike, Bus, Car, Footprints, Leaf, Zap, ArrowRight, TrendingDown, Brain } from 'lucide-react'
+import { MapPin, Bike, Bus, Car, Footprints, Leaf, Zap, ArrowRight, TrendingDown, Brain, Search, Navigation } from 'lucide-react'
 import clsx from 'clsx'
 import Navbar from '@/components/Navbar'
 import { StorageService } from '@/services/storage'
 import RouteMap from '@/components/RouteMap'
 import { getRouteDecision } from '@/services/aiRouteDecision'
+import { useJsApiLoader, Autocomplete } from '@react-google-maps/api'
 
 const ease = [0.16, 1, 0.3, 1]
+const libraries = ['places']
 
 const CO2_FACTORS = { walk: 0, cycle: 0, public: 0.5, car: 2.5 }
 const TRANSPORT_META = {
@@ -69,17 +71,65 @@ function generateBestNextMove(entries) {
 }
 
 export default function Travel() {
+    const { isLoaded } = useJsApiLoader({
+        googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_KEY || '',
+        libraries,
+    })
+
     const [bestMove, setBestMove] = useState(null)
     const [weeklyBreakdown, setWeeklyBreakdown] = useState([])
     const [weeklyTotal, setWeeklyTotal] = useState(0)
+
+    // Live Routing State
     const [routeDecision, setRouteDecision] = useState('Analyzing route impact...')
+    const [directions, setDirections] = useState(null)
+    const [distance, setDistance] = useState(8.2) // Default demo distance
+    const [duration, setDuration] = useState('22 mins')
+
+    const originRef = useRef(null)
+    const destRef = useRef(null)
+
+    async function calculateRoute() {
+        if (!originRef.current || !destRef.current) return
+        const origin = originRef.current.value
+        const destination = destRef.current.value
+        if (!origin || !destination) return
+
+        setRouteDecision('Calculating optimal eco-route...')
+
+        try {
+            // eslint-disable-next-line no-undef
+            const directionsService = new google.maps.DirectionsService()
+            const results = await directionsService.route({
+                origin,
+                destination,
+                // eslint-disable-next-line no-undef
+                travelMode: google.maps.TravelMode.DRIVING
+            })
+
+            if (results.status === 'OK') {
+                setDirections(results)
+                const leg = results.routes[0].legs[0]
+                const distKm = parseFloat((leg.distance.value / 1000).toFixed(1))
+                setDistance(distKm)
+                setDuration(leg.duration.text)
+
+                // Get AI Decision for new route
+                const decision = await getRouteDecision(distKm)
+                setRouteDecision(decision)
+            }
+        } catch (error) {
+            console.error('Route failed:', error)
+            setRouteDecision('Route calculation failed. Using optimal fallback.')
+        }
+    }
 
     useEffect(() => {
         StorageService.init()
         const data = StorageService.getEntries()
         setBestMove(generateBestNextMove(data))
 
-        // Get AI Route decision
+        // Initial check
         getRouteDecision(8.2).then(setRouteDecision)
 
         // Weekly breakdown
@@ -121,10 +171,62 @@ export default function Travel() {
                     className="grid grid-cols-1 lg:grid-cols-3 gap-6"
                 >
                     {/* Map Container */}
-                    <div className="lg:col-span-2 h-[400px] rounded-2xl overflow-hidden border border-[var(--color-border)] shadow-2xl relative group">
-                        <RouteMap />
-                        <div className="absolute bottom-4 left-4 bg-[var(--color-surface)]/90 backdrop-blur px-3 py-1.5 rounded-lg border border-[var(--color-border)] text-xs font-medium">
-                            Route: Home → Office (8.2 km)
+                    <div className="lg:col-span-2 h-[500px] flex flex-col gap-4">
+                        {/* Search Bar Overlay */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {isLoaded ? (
+                                <>
+                                    <Autocomplete>
+                                        <div className="relative">
+                                            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]"><MapPin size={16} /></div>
+                                            <input
+                                                ref={originRef}
+                                                type="text"
+                                                placeholder="Start Location"
+                                                className="w-full pl-10 pr-4 py-3 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] focus:outline-none focus:border-[var(--color-accent)] transition-colors text-sm font-medium shadow-sm"
+                                            />
+                                        </div>
+                                    </Autocomplete>
+                                    <div className="flex gap-3">
+                                        <Autocomplete className="flex-1">
+                                            <div className="relative">
+                                                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]"><Navigation size={16} /></div>
+                                                <input
+                                                    ref={destRef}
+                                                    type="text"
+                                                    placeholder="Destination"
+                                                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] focus:outline-none focus:border-[var(--color-accent)] transition-colors text-sm font-medium shadow-sm"
+                                                />
+                                            </div>
+                                        </Autocomplete>
+                                        <button
+                                            onClick={calculateRoute}
+                                            className="px-5 py-3 rounded-xl bg-[var(--color-accent)] text-white font-bold text-sm shadow-lg shadow-[var(--color-accent)]/20 hover:scale-105 active:scale-95 transition-all"
+                                        >
+                                            Go
+                                        </button>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="col-span-2 h-12 bg-[var(--color-surface)] rounded-xl animate-pulse" />
+                            )}
+                        </div>
+
+                        <div className="flex-1 rounded-2xl overflow-hidden border border-[var(--color-border)] shadow-2xl relative group">
+                            <RouteMap isLoaded={isLoaded} directions={directions} />
+
+                            {/* Route Info Badge */}
+                            <div className="absolute bottom-4 left-4 bg-[var(--color-surface)]/95 backdrop-blur px-4 py-2 rounded-xl border border-[var(--color-border)] shadow-xl flex items-center gap-3">
+                                <div>
+                                    <p className="text-[10px] uppercase tracking-wider font-bold text-[var(--color-text-muted)]">Distance</p>
+                                    <p className="font-display font-bold text-lg">{distance} km</p>
+                                </div>
+                                <div className="w-px h-8 bg-[var(--color-border)]" />
+                                <div>
+                                    <p className="text-[10px] uppercase tracking-wider font-bold text-[var(--color-text-muted)]">Time</p>
+                                    <p className="font-display font-bold text-lg">{duration}</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -137,17 +239,31 @@ export default function Travel() {
                                 <Brain size={20} /> AI Recommendation
                             </h3>
 
-                            <div className="relative z-10 glass-panel p-4 rounded-xl bg-[var(--color-bg)]/50 border border-[var(--color-eco)]/20 mb-4">
-                                <p className="font-display text-lg font-medium leading-relaxed text-[var(--color-text)]/90">
+                            <div className="relative z-10 glass-panel p-5 rounded-xl bg-[var(--color-bg)]/50 border border-[var(--color-eco)]/20 mb-6">
+                                <p className="font-display text-lg font-medium leading-relaxed text-[var(--color-text)]/90 italic">
                                     &ldquo;{routeDecision}&rdquo;
                                 </p>
                             </div>
 
-                            <div className="flex items-center gap-3 text-sm text-[var(--color-text-secondary)]">
-                                <div className="w-8 h-8 rounded-full bg-[var(--color-eco)]/10 flex items-center justify-center">
-                                    <Leaf size={14} className="text-[var(--color-eco)]" />
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-3 p-3 rounded-xl bg-[var(--color-bg)]/50 border border-[var(--color-border)]">
+                                    <div className="w-8 h-8 rounded-full bg-[var(--color-eco)]/10 flex items-center justify-center">
+                                        <Leaf size={14} className="text-[var(--color-eco)]" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)]">Potential Savings</p>
+                                        <p className="font-display font-bold text-[var(--color-eco)]">~{(distance * 0.2).toFixed(1)} kg CO₂</p>
+                                    </div>
                                 </div>
-                                <span>Calculating optimal path...</span>
+                                <div className="flex items-center gap-3 p-3 rounded-xl bg-[var(--color-bg)]/50 border border-[var(--color-border)]">
+                                    <div className="w-8 h-8 rounded-full bg-[var(--color-brand)]/10 flex items-center justify-center">
+                                        <Zap size={14} className="text-[var(--color-brand)]" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)]">AI Rating</p>
+                                        <p className="font-display font-bold text-[var(--color-text)]">Eco-Optimized</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
